@@ -9,5 +9,5 @@ class ScholarshipAdmin(admin.ModelAdmin): # scholarship admin class to customize
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ["country"]
 
-admin.site.register(Country, CountryAdmin)
-admin.site.register(Scholarship, ScholarshipAdmin)
+admin.site.register(Country, CountryAdmin) # Register the Country model with the custom admin class
+admin.site.register(Scholarship, ScholarshipAdmin) # Register the Scholarship model with the custom admin class
