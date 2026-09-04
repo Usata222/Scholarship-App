@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ scholarship.title }}</title>
+</head>
+<body>
+    <h1>{{ scholarship.title }}</h1>
+
+    <p><strong>Country:</strong> {{ scholarship.country.name }}</p>
+    <p><strong>Degree Level:</strong> {{ scholarship.get_degree_level_display }}</p>
+    <p><strong>Funding Type:</strong> {{ scholarship.get_funding_type_display }}</p>
+    <p><strong>Deadline:</strong> {{ scholarship.deadline }}</p>
+
+    <h2>Description</h2>
+    <p>{{ scholarship.description }}</p>
+
+    <h2>Eligibility</h2>
+    <p>{{ scholarship.eligibility }}</p>
+
+    {% if scholarship.required_documents %}
+    <h2>Required Documents</h2>
+    <p>{{ scholarship.required_documents }}</p>
+    {% endif %}
+
+    <a href="{% url 'scholarship_redirect' scholarship.slug %}">Apply Now</a>
+</body>
+</html>

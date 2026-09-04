@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from myapp import views #importing the views from myapp to use in the urls.py file
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.home, name='home'),
+    path('scholarship/<slug:slug>/', views.scholarship_detail, name='scholarship_detail'),
+    path('country/<slug:slug>/', views.country_detail, name='country_detail'),
+    path('go/<slug:slug>/', views.scholarship_redirect, name='scholarship_redirect'),
 ]

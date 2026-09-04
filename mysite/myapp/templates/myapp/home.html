@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ScholarHub — Find Scholarships</title>
+</head>
+<body>
+    <h1>Latest Scholarships</h1>
+
+    {% if scholarships %}
+        <ul>
+        {% for scholarship in scholarships %}
+            <li>
+                <a href="{% url 'scholarship_detail' scholarship.slug %}">
+                    {{ scholarship.title }}
+                </a>
+                — {{ scholarship.country.name }}
+                — Deadline: {{ scholarship.deadline }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No scholarships posted yet.</p>
+    {% endif %}
+</body>
+</html>

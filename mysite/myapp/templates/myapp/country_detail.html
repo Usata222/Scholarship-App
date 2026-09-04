@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scholarships in {{ country.name }}</title>
+</head>
+<body>
+    <h1>Scholarships in {{ country.name }}</h1>
+
+    {% if scholarships %}
+        <ul>
+        {% for scholarship in scholarships %}
+            <li>
+                <a href="{% url 'scholarship_detail' scholarship.slug %}">
+                    {{ scholarship.title }}
+                </a>
+                — {{ scholarship.get_degree_level_display }}
+                — Deadline: {{ scholarship.deadline }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No scholarships posted for {{ country.name }} yet.</p>
+    {% endif %}
+
+    <p><a href="{% url 'home' %}">&larr; Back to all scholarships</a></p>
+</body>
+</html>
