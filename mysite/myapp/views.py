@@ -29,6 +29,7 @@ def home(request):
 
     context = {    # this line creates a context dictionary that will be passed to the template, containing the filtered scholarships and the choices for degree level and funding type, which can be used to populate filter options in the template
         "scholarships": scholarships, # this line adds the filtered scholarships to the context dictionary
+        "countries": Country.objects.all().order_by('name'), # getting all the countries from the database and ordering them by name, which can be used in the template to display a list of countries for filtering scholarships
         "degree_level_choices": Scholarship.DEGREE_LEVEL_CHOICES, # passing the degree level choices to the context dictionary, which can be used in the template to display filter options for degree levels
         "funding_type_choices": Scholarship.FUNDING_TYPE_CHOICES,
     }

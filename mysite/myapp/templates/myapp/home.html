@@ -7,6 +7,31 @@
 <body>
     <h1>Latest Scholarships</h1>
 
+    <form method="get">
+    <select name="country">
+        <option value="">All Countries</option>
+        {% for country in countries %}
+            <option value="{{ country.slug }}">{{ country.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="level">
+        <option value="">All Levels</option>
+        {% for value, label in degree_level_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="funding">
+        <option value="">All Funding Types</option>
+        {% for value, label in funding_type_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Filter</button>
+</form>
+
     {% if scholarships %}
         <ul>
         {% for scholarship in scholarships %}
