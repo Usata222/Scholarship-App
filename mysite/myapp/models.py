@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 class Country(models.Model): # creating the database country
     name = models.CharField(max_length=100, unique=True)
-    slug = models.CharField(max_length=100, unique=True) # slug is a url safe version
+    slug = models.SlugField(max_length=100, unique=True) # slug is a url safe version
 
     class Meta: # to prevent countrys instead of countries
         verbose_name_plural = "Countries"
@@ -35,6 +35,7 @@ class Scholarship(models.Model):
     required_documents = models.TextField(blank=True) #blank=True means that this field is optional
     application_link = models.URLField()
 
+    is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False) #default=False means that this new scholarship will not be published by default, it will be published only when the admin approves it
     view_count = models.PositiveIntegerField(default=0)
     click_count = models.PositiveIntegerField(default=0)
