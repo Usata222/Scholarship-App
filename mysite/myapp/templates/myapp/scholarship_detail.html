@@ -24,5 +24,13 @@
     {% endif %}
 
     <a href="{% url 'scholarship_redirect' scholarship.slug %}">Apply Now</a>
+
+    {% if scholarship.pk in request.session.saved_scholarships %}
+    <a href="{% url 'toggle_save' scholarship.slug %}">Unsave</a>
+    {% else %}
+        <a href="{% url 'toggle_save' scholarship.slug %}">Save</a>
+    {% endif %}
+
+
 </body>
 </html>

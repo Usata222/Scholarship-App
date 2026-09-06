@@ -24,4 +24,6 @@ urlpatterns = [
     path('scholarship/<slug:slug>/', views.scholarship_detail, name='scholarship_detail'),
     path('country/<slug:slug>/', views.country_detail, name='country_detail'),
     path('go/<slug:slug>/', views.scholarship_redirect, name='scholarship_redirect'),
+    path('save/<slug:slug>/', views.toggle_save, name='toggle_save'),
+    path('saved/', views.saved_scholarships, name='saved_scholarships'),
 ]

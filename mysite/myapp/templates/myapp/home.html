@@ -7,6 +7,35 @@
 <body>
     <h1>Latest Scholarships</h1>
 
+    {% if featured_scholarships %}
+<section>
+    <h2>🔥 Hot Scholarships</h2>
+    <ul>
+    {% for scholarship in featured_scholarships %}
+        <li>
+            <a href="{% url 'scholarship_detail' scholarship.slug %}">{{ scholarship.title }}</a>
+            — {{ scholarship.country.name }}
+        </li>
+    {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if deadline_soon %}
+<section>
+    <h2>⏰ Deadline Soon</h2>
+    <ul>
+    {% for scholarship in deadline_soon %}
+        <li>
+            <a href="{% url 'scholarship_detail' scholarship.slug %}">{{ scholarship.title }}</a>
+            — Deadline: {{ scholarship.deadline }}
+        </li>
+    {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+
     <form method="get">
     <select name="country">
         <option value="">All Countries</option>
