@@ -26,4 +26,16 @@ urlpatterns = [
     path('go/<slug:slug>/', views.scholarship_redirect, name='scholarship_redirect'),
     path('save/<slug:slug>/', views.toggle_save, name='toggle_save'),
     path('saved/', views.saved_scholarships, name='saved_scholarships'),
+    path('dashboard/login/', views.admin_login, name='admin_login'),
+    path('dashboard/logout/', views.admin_logout, name='admin_logout'),
+    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/scholarships/', views.admin_scholarship_list, name='admin_scholarship_list'),
+    path('dashboard/scholarships/add/', views.admin_scholarship_add, name='admin_scholarship_add'),
+    path('dashboard/scholarships/<int:pk>/edit/', views.admin_scholarship_edit, name='admin_scholarship_edit'),
+    path('dashboard/scholarships/<int:pk>/delete/', views.admin_scholarship_delete, name='admin_scholarship_delete'),
+    path('dashboard/countries/', views.admin_country_list, name='admin_country_list'),
+    path('dashboard/countries/add/', views.admin_country_add, name='admin_country_add'),
+    path('dashboard/countries/<int:pk>/edit/', views.admin_country_edit, name='admin_country_edit'),
+    path('dashboard/countries/<int:pk>/delete/', views.admin_country_delete, name='admin_country_delete'),
+
 ]

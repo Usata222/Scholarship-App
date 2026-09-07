@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Countries</title>
+</head>
+<body>
+    <h1>Manage Countries</h1>
+
+    <p>
+        <a href="{% url 'admin_dashboard' %}">&larr; Dashboard</a>
+        | <a href="{% url 'admin_scholarship_list' %}">Scholarships</a>
+        | <a href="{% url 'admin_logout' %}">Log Out</a>
+    </p>
+
+    <p><a href="{% url 'admin_country_add' %}">+ Add New Country</a></p>
+
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Actions</th>
+        </tr>
+        {% for country in countries %}
+        <tr>
+            <td>{{ country.name }}</td>
+            <td>{{ country.slug }}</td>
+            <td>
+                <a href="{% url 'admin_country_edit' country.pk %}">Edit</a>
+                | <a href="{% url 'admin_country_delete' country.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

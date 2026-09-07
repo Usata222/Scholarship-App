@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Scholarship</title>
+</head>
+<body>
+    <h1>Add Scholarship</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+
+    <p><a href="{% url 'admin_scholarship_list' %}">&larr; Back to list</a></p>
+</body>
+</html>

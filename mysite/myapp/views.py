@@ -1,8 +1,137 @@
-from django.db.models import F # The F() function is used to reference the value of a model field in a query, allowing for database-level operations without having to retrieve the object into Python memory first. In this case, it is used to increment the click_count field of the Scholarship model directly in the database.
+from django.db.models import F, Sum # The F() function is used to reference the value of a model field in a query, allowing for database-level operations without having to retrieve the object into Python memory first. In this case, it is used to increment the click_count field of the Scholarship model directly in the database.
 from .models import Scholarship, Country
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone # The timezone module is used to work with time zones in Django. It provides utilities for working with date and time, including functions to get the current time in a specific time zone. In this code, it is used to get the current date to filter scholarships based on their deadlines.
 from datetime import timedelta
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from .forms import ScholarshipForm
+from .forms import ScholarshipForm, CountryForm
+
+
+@login_required
+def admin_country_list(request):
+    countries = Country.objects.all().order_by('name')
+    context = {"countries": countries}
+    return render(request, "myapp/admin_country_list.html", context)
+
+
+@login_required
+def admin_country_add(request):
+    if request.method == "POST":
+        form = CountryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_country_list')
+    else:
+        form = CountryForm()
+
+    context = {"form": form}
+    return render(request, "myapp/admin_country_form.html", context)
+
+
+@login_required
+def admin_country_edit(request, pk):
+    country = get_object_or_404(Country, pk=pk)
+    if request.method == "POST":
+        form = CountryForm(request.POST, instance=country)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_country_list')
+    else:
+        form = CountryForm(instance=country)
+
+    context = {"form": form}
+    return render(request, "myapp/admin_country_form.html", context)
+
+
+@login_required
+def admin_country_delete(request, pk):
+    country = get_object_or_404(Country, pk=pk)
+    scholarship_count = country.scholarships.count()
+    if request.method == "POST":
+        country.delete()
+        return redirect('admin_country_list')
+
+    context = {"country": country, "scholarship_count": scholarship_count}
+    return render(request, "myapp/admin_country_delete.html", context)
+
+
+@login_required
+def admin_scholarship_delete(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to delete it. If the request method is POST, it deletes the scholarship and redirects to the scholarship list. If the request method is GET, it renders a confirmation page asking the admin user to confirm the deletion.
+    scholarship = get_object_or_404(Scholarship, pk=pk)
+    if request.method == "POST":
+        scholarship.delete()
+        return redirect('admin_scholarship_list')
+
+    context = {"scholarship": scholarship}
+    return render(request, "myapp/admin_scholarship_delete.html", context)
+
+@login_required 
+def admin_scholarship_edit(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to edit its details using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the changes and redirects to the scholarship list. If the request method is GET, it displays the form pre-filled with the scholarship's current data.
+    scholarship = get_object_or_404(Scholarship, pk=pk)
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST, instance=scholarship)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_scholarship_list')
+    else:
+        form = ScholarshipForm(instance=scholarship)
+
+    context = {"form": form}
+    return render(request, "myapp/admin_scholarship_form.html", context)
+
+@login_required
+def admin_scholarship_add(request):
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_scholarship_list')
+    else:
+        form = ScholarshipForm()
+
+    context = {"form": form}
+    return render(request, "myapp/admin_scholarship_form.html", context)
+
+@login_required
+def admin_dashboard(request): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page.
+    total_scholarships = Scholarship.objects.count()
+    published_count = Scholarship.objects.filter(is_published=True).count()
+    total_clicks = Scholarship.objects.aggregate(total=Sum('click_count'))['total'] or 0
+
+    context = { # this line creates a context dictionary that will be passed to the template, containing the total number of scholarships, the count of published scholarships, and the total number of clicks across all scholarships. This data can be used in the template to display statistics on the admin dashboard.
+        "total_scholarships": total_scholarships,
+        "published_count": published_count,
+        "total_clicks": total_clicks,
+    }
+    return render(request, "myapp/admin_dashboard.html", context)
+
+def admin_login(request): # this function handles the login process for the admin user. It checks if the request method is POST, retrieves the username and password from the request, and uses Django's built-in authenticate function to verify the credentials. If the authentication is successful, it logs in the user and redirects them to the admin dashboard. If authentication fails, it renders the login page again with an error message. If the request method is not POST, it simply renders the login page.
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('admin_dashboard')
+        else:
+            return render(request, "myapp/admin_login.html", {"error": "Invalid username or password"})
+    return render(request, "myapp/admin_login.html")
+
+
+def admin_logout(request): # this function logs out the currently authenticated user and redirects them to the admin login page. It uses Django's built-in logout function to clear the user's session and authentication data.
+    logout(request)
+    return redirect('admin_login')
+
+
+@login_required
+def admin_scholarship_list(request):
+    scholarships = Scholarship.objects.all().order_by('-created_at')
+    context = {
+        "scholarships": scholarships,
+    }
+    return render(request, "myapp/admin_scholarship_list.html", context)
 
 def scholarship_detail(request, slug): # every django view function takes at least one argument, which is the request object, and in this case we are also taking a slug argument to identify the scholarship
     scholarship = get_object_or_404(Scholarship, slug=slug, is_published=True) # it fetches the scholarship object from the database based on the slug and is_published=True, if it doesn't find it, it raises a 404 error

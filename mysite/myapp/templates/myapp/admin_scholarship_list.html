@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Scholarships</title>
+</head>
+<body>
+    <h1>Manage Scholarships</h1>
+
+    <p>
+        <a href="{% url 'admin_dashboard' %}">&larr; Dashboard</a>
+        | <a href="{% url 'admin_logout' %}">Log Out</a>
+    </p>
+
+    <p><a href="{% url 'admin_scholarship_add' %}">+ Add New Scholarship</a></p>
+
+    <table border="1">
+        <tr>
+            <th>Title</th>
+            <th>Country</th>
+            <th>Deadline</th>
+            <th>Published</th>
+            <th>Featured</th>
+            <th>Actions</th>
+        </tr>
+        {% for scholarship in scholarships %}
+        <tr>
+            <td>{{ scholarship.title }}</td>
+            <td>{{ scholarship.country.name }}</td>
+            <td>{{ scholarship.deadline }}</td>
+            <td>{% if scholarship.is_published %}Yes{% else %}No{% endif %}</td>
+            <td>{% if scholarship.is_featured %}Yes{% else %}No{% endif %}</td>
+            <td>
+                <a href="{% url 'admin_scholarship_edit' scholarship.pk %}">Edit</a>
+                | <a href="{% url 'admin_scholarship_delete' scholarship.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
