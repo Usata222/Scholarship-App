@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from myapp import views #importing the views from myapp to use in the urls.py file
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,5 +40,18 @@ urlpatterns = [
     path('dashboard/countries/add/', views.admin_country_add, name='admin_country_add'),
     path('dashboard/countries/<int:pk>/edit/', views.admin_country_edit, name='admin_country_edit'),
     path('dashboard/countries/<int:pk>/delete/', views.admin_country_delete, name='admin_country_delete'),
+    path('submit-scholarship/', views.submit_scholarship, name='submit_scholarship'),
+    path('coaching/', views.request_coaching, name='request_coaching'),
+    path('newsletter/signup/', views.newsletter_signup, name='newsletter_signup'),
+
+    path('dashboard/submissions/', views.admin_submission_list, name='admin_submission_list'),
+    path('dashboard/submissions/<int:pk>/', views.admin_submission_review, name='admin_submission_review'),
+    path('dashboard/coaching/', views.admin_coaching_list, name='admin_coaching_list'),
+
+
 
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,16 @@
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Scholarship Submissions{% endblock %}
+{% block content %}
+<h1>Pending Submissions</h1>
+<table border="1">
+    <tr><th>Title</th><th>Organization</th><th>Submitted</th><th>Action</th></tr>
+    {% for submission in submissions %}
+    <tr>
+        <td>{{ submission.title }}</td>
+        <td>{{ submission.organization_name }}</td>
+        <td>{{ submission.submitted_at }}</td>
+        <td><a href="{% url 'admin_submission_review' submission.pk %}">Review</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

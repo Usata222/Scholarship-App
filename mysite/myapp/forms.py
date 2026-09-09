@@ -1,20 +1,45 @@
 from django import forms
-from .models import Scholarship
-from .models import Scholarship, Country
+from .models import Scholarship, Country, ScholarshipSubmission, CoachingRequest, NewsletterSubscriber
 
-class ScholarshipForm(forms.ModelForm): # creating a form for the Scholarship model using Django's ModelForm, which automatically generates form fields based on the model's fields
-    class Meta: # this inner class is used to specify the model and fields that the form will use, as well as any additional configurations such as widgets for customizing the form's appearance and behavior
+class ScholarshipForm(forms.ModelForm):
+    class Meta:
         model = Scholarship
         fields = [
             "title", "slug", "country", "degree_level", "funding_type",
             "deadline", "description", "eligibility", "required_documents",
-            "application_link", "is_published", "is_featured",
+            "application_link", "image", "is_published", "is_featured",
         ]
         widgets = {
             "deadline": forms.DateInput(attrs={"type": "date"}),
         }
 
+
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
         fields = ["name", "slug"]
+
+
+class SubmissionForm(forms.ModelForm):
+    class Meta:
+        model = ScholarshipSubmission
+        fields = [
+            "organization_name", "contact_email", "title", "country_name",
+            "degree_level", "funding_type", "deadline", "description",
+            "eligibility", "required_documents", "application_link",
+        ]
+        widgets = {
+            "deadline": forms.DateInput(attrs={"type": "date"}),
+        }
+
+
+class CoachingRequestForm(forms.ModelForm):
+    class Meta:
+        model = CoachingRequest
+        fields = ["name", "email", "message"]
+
+
+class NewsletterForm(forms.ModelForm):
+    class Meta:
+        model = NewsletterSubscriber
+        fields = ["email"]

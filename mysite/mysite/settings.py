@@ -132,3 +132,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 LOGIN_URL = 'admin_login'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@scholarhub.local'
+ADMIN_EMAIL = 'tekkiusata222@gmail.com'

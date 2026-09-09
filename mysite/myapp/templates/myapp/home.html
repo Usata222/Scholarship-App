@@ -36,6 +36,20 @@
 {% endif %}
 
 
+
+<form method="post" action="{% url 'newsletter_signup' %}">
+    {% csrf_token %}
+    <input type="email" name="email" placeholder="Your email" required>
+    <button type="submit">Get Scholarship Alerts</button>
+</form>
+
+<p>
+    <a href="{% url 'submit_scholarship' %}">Have a Scholarship to Share?</a>
+    | <a href="{% url 'request_coaching' %}">Get 1-on-1 Coaching</a>
+</p>
+
+
+
     <form method="get">
     <select name="country">
         <option value="">All Countries</option>

@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from .forms import ScholarshipForm
 from .forms import ScholarshipForm, CountryForm
 from django.core.paginator import Paginator
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Scholarship, Country, ScholarshipSubmission, CoachingRequest, NewsletterSubscriber
+from .forms import ScholarshipForm, CountryForm, SubmissionForm, CoachingRequestForm, NewsletterForm
 
 
 @login_required
@@ -230,5 +234,110 @@ def saved_scholarships(request): # this function retrieves the list of saved sch
         "scholarships": scholarships,
     }
     return render(request, "myapp/saved_scholarships.html", context)
+
+
+def submit_scholarship(request):
+    if request.method == "POST":
+        form = SubmissionForm(request.POST)
+        if form.is_valid():
+            submission = form.save()
+            send_mail(
+                subject=f"New scholarship submission: {submission.title}",
+                message=f"Organization: {submission.organization_name}\nContact: {submission.contact_email}\nReview it in the dashboard at /dashboard/submissions/",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ADMIN_EMAIL],
+            )
+            return render(request, "myapp/submit_scholarship_success.html")
+    else:
+        form = SubmissionForm()
+    return render(request, "myapp/submit_scholarship.html", {"form": form})
+
+
+def request_coaching(request):
+    if request.method == "POST":
+        form = CoachingRequestForm(request.POST)
+        if form.is_valid():
+            coaching_request = form.save()
+            send_mail(
+                subject=f"New coaching request from {coaching_request.name}",
+                message=f"Email: {coaching_request.email}\n\n{coaching_request.message}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ADMIN_EMAIL],
+            )
+            return render(request, "myapp/request_coaching_success.html")
+    else:
+        form = CoachingRequestForm()
+    return render(request, "myapp/request_coaching.html", {"form": form})
+
+
+def newsletter_signup(request):
+    if request.method == "POST":
+        form = NewsletterForm(request.POST)
+        if form.is_valid():
+            form.save()
+    return redirect('home')
+
+
+@login_required
+def admin_submission_list(request):
+    submissions = ScholarshipSubmission.objects.filter(status="pending").order_by('-submitted_at')
+    context = {"submissions": submissions}
+    return render(request, "myapp/admin_submission_list.html", context)
+
+
+@login_required
+def admin_submission_review(request, pk):
+    submission = get_object_or_404(ScholarshipSubmission, pk=pk)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "approve":
+            country, created = Country.objects.get_or_create(
+                name=submission.country_name,
+                defaults={"slug": submission.country_name.lower().replace(" ", "-")}
+            )
+            Scholarship.objects.create(
+                title=submission.title,
+                slug=submission.title.lower().replace(" ", "-")[:220],
+                country=country,
+                degree_level=submission.degree_level,
+                funding_type=submission.funding_type,
+                deadline=submission.deadline,
+                description=submission.description,
+                eligibility=submission.eligibility,
+                required_documents=submission.required_documents,
+                application_link=submission.application_link,
+                is_published=True,
+            )
+            submission.status = "approved"
+            submission.save()
+            send_mail(
+                subject="Your scholarship submission was approved",
+                message=f"Hi, your submission '{submission.title}' is now live on ScholarHub.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[submission.contact_email],
+            )
+        elif action == "reject":
+            submission.status = "rejected"
+            submission.save()
+            send_mail(
+                subject="Your scholarship submission was not approved",
+                message=f"Hi, your submission '{submission.title}' was not approved for listing on ScholarHub.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[submission.contact_email],
+            )
+
+        return redirect('admin_submission_list')
+
+    context = {"submission": submission}
+    return render(request, "myapp/admin_submission_review.html", context)
+
+
+@login_required
+def admin_coaching_list(request):
+    coaching_requests = CoachingRequest.objects.all().order_by('-created_at')
+    context = {"coaching_requests": coaching_requests}
+    return render(request, "myapp/admin_coaching_list.html", context)
 
 

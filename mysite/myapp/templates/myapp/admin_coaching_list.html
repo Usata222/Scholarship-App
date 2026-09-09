@@ -1,0 +1,16 @@
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Coaching Requests{% endblock %}
+{% block content %}
+<h1>Coaching Requests</h1>
+<table border="1">
+    <tr><th>Name</th><th>Email</th><th>Message</th><th>Received</th></tr>
+    {% for req in coaching_requests %}
+    <tr>
+        <td>{{ req.name }}</td>
+        <td>{{ req.email }}</td>
+        <td>{{ req.message }}</td>
+        <td>{{ req.created_at }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

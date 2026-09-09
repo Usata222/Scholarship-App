@@ -6,6 +6,9 @@
 </head>
 <body>
     <h1>{{ scholarship.title }}</h1>
+    {% if scholarship.image %}
+    <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" style="max-width: 100%;">
+{% endif %}
 
     <p><strong>Country:</strong> {{ scholarship.country.name }}</p>
     <p><strong>Degree Level:</strong> {{ scholarship.get_degree_level_display }}</p>
@@ -30,6 +33,8 @@
     {% else %}
         <a href="{% url 'toggle_save' scholarship.slug %}">Save</a>
     {% endif %}
+    
+    <a href="https://wa.me/?text={{ scholarship.title|urlencode }}%20-%20{{ request.build_absolute_uri|urlencode }}" target="_blank">Share on WhatsApp</a>
 
 
 </body>

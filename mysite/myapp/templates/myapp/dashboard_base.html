@@ -6,11 +6,13 @@
 </head>
 <body>
     <nav>
-        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
-        | <a href="{% url 'admin_scholarship_list' %}">Scholarships</a>
-        | <a href="{% url 'admin_country_list' %}">Countries</a>
-        | <a href="{% url 'admin_logout' %}">Log Out</a>
-    </nav>
+    <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+    | <a href="{% url 'admin_scholarship_list' %}">Scholarships</a>
+    | <a href="{% url 'admin_country_list' %}">Countries</a>
+    | <a href="{% url 'admin_submission_list' %}">Submissions</a>
+    | <a href="{% url 'admin_coaching_list' %}">Coaching Requests</a>
+    | <a href="{% url 'admin_logout' %}">Log Out</a>
+</nav>
     <hr>
 
     {% block content %}

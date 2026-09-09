@@ -34,6 +34,7 @@ class Scholarship(models.Model):
     eligibility = models.TextField()
     required_documents = models.TextField(blank=True) #blank=True means that this field is optional
     application_link = models.URLField()
+    image = models.ImageField(upload_to='scholarships/', blank=True, null=True)
 
     is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False) #default=False means that this new scholarship will not be published by default, it will be published only when the admin approves it
@@ -45,3 +46,47 @@ class Scholarship(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ScholarshipSubmission(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    organization_name = models.CharField(max_length=200)
+    contact_email = models.EmailField()
+    title = models.CharField(max_length=200)
+    country_name = models.CharField(max_length=100)
+    degree_level = models.CharField(max_length=20, choices=Scholarship.DEGREE_LEVEL_CHOICES)
+    funding_type = models.CharField(max_length=10, choices=Scholarship.FUNDING_TYPE_CHOICES)
+    deadline = models.DateField()
+    description = models.TextField()
+    eligibility = models.TextField()
+    required_documents = models.TextField(blank=True)
+    application_link = models.URLField()
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.organization_name})"
+
+
+class CoachingRequest(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
+
+
+class NewsletterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
