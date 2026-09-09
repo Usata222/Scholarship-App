@@ -11,6 +11,8 @@
         <p style="color: red;">{{ error }}</p>
     {% endif %}
 
+    <p><a href="{% url 'password_reset' %}">Forgot password?</a></p>
+
     <form method="post">
         {% csrf_token %}  {% comment %}this line is a security measure to prevent Cross-Site Request Forgery (CSRF) attacks. It generates a unique token for each form submission, which the server checks to ensure that the request is coming from the same site and not from a malicious source. In Django, this is done using the {% csrf_token %} template tag, which should be included in every form that modifies data on the server. {% endcomment %}
         <label>Username:</label>

@@ -19,6 +19,7 @@ from django.urls import path
 from myapp import views #importing the views from myapp to use in the urls.py file
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -50,6 +51,26 @@ urlpatterns = [
     path('newsletter/unsubscribe/<uuid:token>/', views.newsletter_unsubscribe, name='newsletter_unsubscribe'),
     
 
+
+    path('dashboard/password-reset/', auth_views.PasswordResetView.as_view(
+        template_name='myapp/password_reset_form.html',
+        email_template_name='myapp/password_reset_email.txt',
+        subject_template_name='myapp/password_reset_subject.txt',
+        success_url='/dashboard/password-reset/done/'
+    ), name='password_reset'),
+
+    path('dashboard/password-reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='myapp/password_reset_done.html'
+    ), name='password_reset_done'),
+
+    path('dashboard/password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='myapp/password_reset_confirm.html',
+        success_url='/dashboard/password-reset-complete/'
+    ), name='password_reset_confirm'),
+
+    path('dashboard/password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='myapp/password_reset_complete.html'
+    ), name='password_reset_complete'),
 
 ]
 
