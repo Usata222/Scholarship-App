@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Delete Scholarship</title>
-</head>
-<body>
-    <h1>Delete "{{ scholarship.title }}"?</h1>
-    <p>This cannot be undone.</p>
-
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit">Yes, Delete It</button>
-    </form>
-
-    <p><a href="{% url 'admin_scholarship_list' %}">Cancel, go back</a></p>
-</body>
-</html>
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Delete Scholarship{% endblock %}
+{% block content %}
+<h1>Delete "{{ scholarship.title }}"?</h1>
+<p>This cannot be undone.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete It</button>
+</form>
+<p><a href="{% url 'admin_scholarship_list' %}">Cancel, go back</a></p>
+{% endblock %}

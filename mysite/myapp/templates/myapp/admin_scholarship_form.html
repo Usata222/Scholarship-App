@@ -1,18 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Scholarship</title>
-</head>
-<body>
-    <h1>Add Scholarship</h1>
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Scholarship Form{% endblock %}
+{% block content %}
+<h1>Scholarship</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<p><a href="{% url 'admin_scholarship_list' %}">&larr; Back to list</a></p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-
-    <p><a href="{% url 'admin_scholarship_list' %}">&larr; Back to list</a></p>
-</body>
-</html>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sourceField = document.getElementById("id_title");
+    const slugField = document.getElementById("id_slug");
+    let slugEdited = false;
+    if (slugField) {
+        slugField.addEventListener("input", function () { slugEdited = true; });
+    }
+    if (sourceField && slugField) {
+        sourceField.addEventListener("input", function () {
+            if (slugEdited) return;
+            slugField.value = sourceField.value
+                .toLowerCase().trim()
+                .replace(/[^a-z0-9\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-");
+        });
+    }
+});
+</script>
+{% endblock %}

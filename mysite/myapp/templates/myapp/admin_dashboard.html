@@ -1,18 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-</head>
-<body>
-    <h1>Admin Dashboard</h1>
-
-    <p><a href="{% url 'admin_logout' %}">Log Out</a></p>
-
-    <ul>
-        <li>Total Scholarships: {{ total_scholarships }}</li>
-        <li>Published: {{ published_count }}</li>
-        <li>Total Application Clicks: {{ total_clicks }}</li>
-    </ul>
-</body>
-</html>
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Admin Dashboard</h1>
+<ul>
+    <li>Total Scholarships: {{ total_scholarships }}</li>
+    <li>Published: {{ published_count }}</li>
+    <li>Total Application Clicks: {{ total_clicks }}</li>
+</ul>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Admin{% endblock %} | ScholarHub</title>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        | <a href="{% url 'admin_scholarship_list' %}">Scholarships</a>
+        | <a href="{% url 'admin_country_list' %}">Countries</a>
+        | <a href="{% url 'admin_logout' %}">Log Out</a>
+    </nav>
+    <hr>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

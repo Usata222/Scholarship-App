@@ -73,6 +73,17 @@
             </li>
         {% endfor %}
         </ul>
+        {% if scholarships.has_other_pages %}
+<p>
+    {% if scholarships.has_previous %}
+        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.previous_page_number }}">Previous</a>
+    {% endif %}
+    Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}
+    {% if scholarships.has_next %}
+        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.next_page_number }}">Next</a>
+    {% endif %}
+</p>
+{% endif %}
     {% else %}
         <p>No scholarships posted yet.</p>
     {% endif %}

@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import ScholarshipForm
 from .forms import ScholarshipForm, CountryForm
+from django.core.paginator import Paginator
 
 
 @login_required
@@ -128,10 +129,12 @@ def admin_logout(request): # this function logs out the currently authenticated 
 @login_required
 def admin_scholarship_list(request):
     scholarships = Scholarship.objects.all().order_by('-created_at')
-    context = {
-        "scholarships": scholarships,
-    }
+    paginator = Paginator(scholarships, 20)
+    page_number = request.GET.get('page')
+    scholarships_page = paginator.get_page(page_number)
+    context = {"scholarships": scholarships_page}
     return render(request, "myapp/admin_scholarship_list.html", context)
+
 
 def scholarship_detail(request, slug): # every django view function takes at least one argument, which is the request object, and in this case we are also taking a slug argument to identify the scholarship
     scholarship = get_object_or_404(Scholarship, slug=slug, is_published=True) # it fetches the scholarship object from the database based on the slug and is_published=True, if it doesn't find it, it raises a 404 error
@@ -144,11 +147,11 @@ def scholarship_detail(request, slug): # every django view function takes at lea
 
 
 def home(request):
-    scholarships = Scholarship.objects.filter(is_published=True).order_by('-created_at') # this line fetches all the scholarships from the database that are published and orders them by their creation date in descending order
+    scholarships = Scholarship.objects.filter(is_published=True).order_by('-created_at')
 
-    country_slug = request.GET.get('country')# this line retrieves the value of the 'country' parameter from the GET request, which is used to filter scholarships by country if provided
-    if country_slug:   # this line checks if a country slug was provided in the GET request, and if so, it filters the scholarships to only include those that belong to the specified country
-        scholarships = scholarships.filter(country__slug=country_slug)   # this line filters the scholarships queryset to only include scholarships that belong to the country with the specified slug, using Django's double underscore notation to traverse relationships between models
+    country_slug = request.GET.get('country')
+    if country_slug:
+        scholarships = scholarships.filter(country__slug=country_slug)
 
     degree_level = request.GET.get('level')
     if degree_level:
@@ -166,13 +169,23 @@ def home(request):
         deadline__lte=today + timedelta(days=14),
     ).order_by('deadline')[:5]
 
-    context = {    # this line creates a context dictionary that will be passed to the template, containing the filtered scholarships and the choices for degree level and funding type, which can be used to populate filter options in the template
-        "scholarships": scholarships, # this line adds the filtered scholarships to the context dictionary
-        "countries": Country.objects.all().order_by('name'), # getting all the countries from the database and ordering them by name, which can be used in the template to display a list of countries for filtering scholarships
-        "degree_level_choices": Scholarship.DEGREE_LEVEL_CHOICES, # passing the degree level choices to the context dictionary, which can be used in the template to display filter options for degree levels
+    paginator = Paginator(scholarships, 12)
+    page_number = request.GET.get('page')
+    scholarships_page = paginator.get_page(page_number)
+
+    querydict = request.GET.copy()
+    if 'page' in querydict:
+        del querydict['page']
+    querystring = querydict.urlencode()
+
+    context = {
+        "scholarships": scholarships_page,
+        "countries": Country.objects.all().order_by('name'),
+        "degree_level_choices": Scholarship.DEGREE_LEVEL_CHOICES,
         "funding_type_choices": Scholarship.FUNDING_TYPE_CHOICES,
         "featured_scholarships": featured_scholarships,
         "deadline_soon": deadline_soon,
+        "querystring": querystring,
     }
     return render(request, "myapp/home.html", context)
 
@@ -180,9 +193,14 @@ def home(request):
 def country_detail(request, slug):
     country = get_object_or_404(Country, slug=slug)
     scholarships = country.scholarships.filter(is_published=True).order_by('-created_at')
+
+    paginator = Paginator(scholarships, 12)
+    page_number = request.GET.get('page')
+    scholarships_page = paginator.get_page(page_number)
+
     context = {
         "country": country,
-        "scholarships": scholarships,
+        "scholarships": scholarships_page,
     }
     return render(request, "myapp/country_detail.html", context)
 
