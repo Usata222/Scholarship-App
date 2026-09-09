@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 class Country(models.Model): # creating the database country
@@ -86,6 +87,7 @@ class CoachingRequest(models.Model):
 
 class NewsletterSubscriber(models.Model):
     email = models.EmailField(unique=True)
+    unsubscribe_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -72,13 +72,17 @@ def admin_scholarship_delete(request, pk): # this function is decorated with the
     context = {"scholarship": scholarship}
     return render(request, "myapp/admin_scholarship_delete.html", context)
 
-@login_required 
-def admin_scholarship_edit(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to edit its details using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the changes and redirects to the scholarship list. If the request method is GET, it displays the form pre-filled with the scholarship's current data.
+@login_required
+def admin_scholarship_edit(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to edit its details using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the changes and checks if the scholarship was published. If it was not published before but is now published, it calls a function to notify subscribers of the new scholarship. Finally, it redirects to the scholarship list. If the request method is GET, it displays the form pre-filled with the scholarship's current details.
     scholarship = get_object_or_404(Scholarship, pk=pk)
+    was_published = scholarship.is_published
+
     if request.method == "POST":
-        form = ScholarshipForm(request.POST, instance=scholarship)
+        form = ScholarshipForm(request.POST, request.FILES, instance=scholarship)
         if form.is_valid():
-            form.save()
+            scholarship = form.save()
+            if not was_published and scholarship.is_published:
+                notify_subscribers_of_new_scholarship(scholarship)
             return redirect('admin_scholarship_list')
     else:
         form = ScholarshipForm(instance=scholarship)
@@ -86,18 +90,22 @@ def admin_scholarship_edit(request, pk): # this function is decorated with the @
     context = {"form": form}
     return render(request, "myapp/admin_scholarship_form.html", context)
 
+
 @login_required
-def admin_scholarship_add(request):
+def admin_scholarship_add(request): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function allows the admin user to add a new scholarship using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the new scholarship and checks if it is published. If published, it calls a function to notify subscribers of the new scholarship. Finally, it redirects to the scholarship list. If the request method is GET, it displays an empty form for adding a new scholarship.
     if request.method == "POST":
-        form = ScholarshipForm(request.POST)
+        form = ScholarshipForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            scholarship = form.save()
+            if scholarship.is_published:
+                notify_subscribers_of_new_scholarship(scholarship)
             return redirect('admin_scholarship_list')
     else:
         form = ScholarshipForm()
 
     context = {"form": form}
     return render(request, "myapp/admin_scholarship_form.html", context)
+
 
 @login_required
 def admin_dashboard(request): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page.
@@ -341,3 +349,46 @@ def admin_coaching_list(request):
     return render(request, "myapp/admin_coaching_list.html", context)
 
 
+def notify_subscribers_of_new_scholarship(scholarship):
+    subscribers = NewsletterSubscriber.objects.all()
+    for subscriber in subscribers:
+        unsubscribe_link = request_build_unsubscribe_link(subscriber)
+        send_mail(
+            subject=f"New Scholarship: {scholarship.title}",
+            message=(
+                f"{scholarship.title} — {scholarship.country.name}\n"
+                f"Deadline: {scholarship.deadline}\n\n"
+                f"View it: http://127.0.0.1:8000/scholarship/{scholarship.slug}/\n\n"
+                f"Unsubscribe: {unsubscribe_link}"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[subscriber.email],
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################################################
+
+
+
+
+
+
+def request_build_unsubscribe_link(subscriber):
+    return f"http://127.0.0.1:8000/newsletter/unsubscribe/{subscriber.unsubscribe_token}/"
+
+def newsletter_unsubscribe(request, token):
+    subscriber = get_object_or_404(NewsletterSubscriber, unsubscribe_token=token)
+    subscriber.delete()
+    return render(request, "myapp/newsletter_unsubscribe_success.html")

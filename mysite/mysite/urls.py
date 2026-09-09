@@ -47,7 +47,8 @@ urlpatterns = [
     path('dashboard/submissions/', views.admin_submission_list, name='admin_submission_list'),
     path('dashboard/submissions/<int:pk>/', views.admin_submission_review, name='admin_submission_review'),
     path('dashboard/coaching/', views.admin_coaching_list, name='admin_coaching_list'),
-
+    path('newsletter/unsubscribe/<uuid:token>/', views.newsletter_unsubscribe, name='newsletter_unsubscribe'),
+    
 
 
 ]
