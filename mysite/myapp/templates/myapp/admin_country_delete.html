@@ -3,13 +3,13 @@
 {% block content %}
 <h1>Delete "{{ country.name }}"?</h1>
 {% if scholarship_count > 0 %}
-    <p style="color: red;">Warning: this country has {{ scholarship_count }} scholarship(s) attached. Deleting it will delete all of them too. This cannot be undone.</p>
+    <div class="alert alert-error">Warning: this country has {{ scholarship_count }} scholarship(s) attached. Deleting it will delete all of them too. This cannot be undone.</div>
 {% else %}
-    <p>This cannot be undone.</p>
+    <div class="alert alert-error">This cannot be undone.</div>
 {% endif %}
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Yes, Delete It</button>
+    <button type="submit" class="btn btn-danger">Yes, Delete It</button>
 </form>
 <p><a href="{% url 'admin_country_list' %}">Cancel, go back</a></p>
 {% endblock %}

@@ -13,7 +13,7 @@ class Country(models.Model): # creating the database country
         return self.name
 
 
-class Scholarship(models.Model): # this is the main model for scholarships, it will have a foreign key to country, so that we can filter scholarships by country
+class Scholarship(models.Model):
     DEGREE_LEVEL_CHOICES = [
         ("undergraduate", "Undergraduate"),
         ("masters", "Master's"),

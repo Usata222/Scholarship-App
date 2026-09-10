@@ -2,9 +2,10 @@
 {% block title %}Manage Scholarships{% endblock %}
 {% block content %}
 <h1>Manage Scholarships</h1>
-<p><a href="{% url 'admin_scholarship_add' %}">+ Add New Scholarship</a></p>
+<p><a href="{% url 'admin_scholarship_add' %}" class="btn btn-primary">+ Add New Scholarship</a></p>
 
-<table border="1">
+<div class="table-wrap">
+<table>
     <tr>
         <th>Title</th><th>Country</th><th>Deadline</th>
         <th>Published</th><th>Featured</th><th>Actions</th>
@@ -23,12 +24,13 @@
     </tr>
     {% endfor %}
 </table>
+</div>
 
 {% if scholarships.has_other_pages %}
-<p>
-    {% if scholarships.has_previous %}<a href="?page={{ scholarships.previous_page_number }}">Previous</a>{% endif %}
-    Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}
-    {% if scholarships.has_next %}<a href="?page={{ scholarships.next_page_number }}">Next</a>{% endif %}
-</p>
+<div class="pagination">
+    {% if scholarships.has_previous %}<a href="?page={{ scholarships.previous_page_number }}">&larr; Previous</a>{% endif %}
+    <span>Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}</span>
+    {% if scholarships.has_next %}<a href="?page={{ scholarships.next_page_number }}">Next &rarr;</a>{% endif %}
+</div>
 {% endif %}
 {% endblock %}

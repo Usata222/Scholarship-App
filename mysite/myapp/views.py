@@ -358,7 +358,7 @@ def notify_subscribers_of_new_scholarship(scholarship):
             message=(
                 f"{scholarship.title} — {scholarship.country.name}\n"
                 f"Deadline: {scholarship.deadline}\n\n"
-                f"View it: http://127.0.0.1:8000/scholarship/{scholarship.slug}/\n\n"
+                f"View it: {settings.SITE_URL}/scholarship/{scholarship.slug}/\n\n"
                 f"Unsubscribe: {unsubscribe_link}"
             ),
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -386,9 +386,16 @@ def notify_subscribers_of_new_scholarship(scholarship):
 
 
 def request_build_unsubscribe_link(subscriber):
-    return f"http://127.0.0.1:8000/newsletter/unsubscribe/{subscriber.unsubscribe_token}/"
+    return f"{settings.SITE_URL}/newsletter/unsubscribe/{subscriber.unsubscribe_token}/"
 
 def newsletter_unsubscribe(request, token):
     subscriber = get_object_or_404(NewsletterSubscriber, unsubscribe_token=token)
     subscriber.delete()
     return render(request, "myapp/newsletter_unsubscribe_success.html")
+
+def privacy_policy(request):
+    return render(request, "myapp/privacy_policy.html")
+
+
+def terms_of_use(request):
+    return render(request, "myapp/terms_of_use.html")

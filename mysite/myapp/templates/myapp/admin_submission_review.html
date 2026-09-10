@@ -2,22 +2,24 @@
 {% block title %}Review Submission{% endblock %}
 {% block content %}
 <h1>{{ submission.title }}</h1>
-<p><strong>Organization:</strong> {{ submission.organization_name }} ({{ submission.contact_email }})</p>
-<p><strong>Country:</strong> {{ submission.country_name }}</p>
-<p><strong>Degree Level:</strong> {{ submission.get_degree_level_display }}</p>
-<p><strong>Funding:</strong> {{ submission.get_funding_type_display }}</p>
-<p><strong>Deadline:</strong> {{ submission.deadline }}</p>
-<p><strong>Description:</strong> {{ submission.description }}</p>
-<p><strong>Eligibility:</strong> {{ submission.eligibility }}</p>
-<p><strong>Application Link:</strong> {{ submission.application_link }}</p>
-<p><strong>Status:</strong> {{ submission.get_status_display }}</p>
+<div class="form-card" style="max-width: 640px;">
+    <p><strong>Organization:</strong> {{ submission.organization_name }} ({{ submission.contact_email }})</p>
+    <p><strong>Country:</strong> {{ submission.country_name }}</p>
+    <p><strong>Degree Level:</strong> {{ submission.get_degree_level_display }}</p>
+    <p><strong>Funding:</strong> {{ submission.get_funding_type_display }}</p>
+    <p><strong>Deadline:</strong> {{ submission.deadline }}</p>
+    <p><strong>Description:</strong> {{ submission.description }}</p>
+    <p><strong>Eligibility:</strong> {{ submission.eligibility }}</p>
+    <p><strong>Application Link:</strong> {{ submission.application_link }}</p>
+    <p><strong>Status:</strong> {{ submission.get_status_display }}</p>
 
-{% if submission.status == "pending" %}
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" name="action" value="approve">Approve & Publish</button>
-    <button type="submit" name="action" value="reject">Reject</button>
-</form>
-{% endif %}
+    {% if submission.status == "pending" %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="action" value="approve" class="btn btn-primary">Approve & Publish</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+    </form>
+    {% endif %}
+</div>
 <p><a href="{% url 'admin_submission_list' %}">&larr; Back to submissions</a></p>
 {% endblock %}

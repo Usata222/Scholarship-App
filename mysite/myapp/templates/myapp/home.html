@@ -1,105 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ScholarHub — Find Scholarships</title>
-</head>
-<body>
-    <h1>Latest Scholarships</h1>
+{% extends "myapp/base_public.html" %}
+{% block title %}Find Scholarships to Study Abroad{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <h1>Find Verified Scholarships to Study Abroad</h1>
+        <p>Browse fully and partially funded scholarships by country, degree level, and deadline. No gimmicks, no dead ends.</p>
+        <form method="post" action="{% url 'newsletter_signup' %}" class="newsletter-form">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="Your email" required>
+            <button type="submit" class="btn btn-gold">Get Scholarship Alerts</button>
+        </form>
+    </div>
+</section>
+
+<div class="container">
 
     {% if featured_scholarships %}
-<section>
-    <h2>🔥 Hot Scholarships</h2>
-    <ul>
-    {% for scholarship in featured_scholarships %}
-        <li>
-            <a href="{% url 'scholarship_detail' scholarship.slug %}">{{ scholarship.title }}</a>
-            — {{ scholarship.country.name }}
-        </li>
-    {% endfor %}
-    </ul>
-</section>
-{% endif %}
+    <section class="section">
+        <div class="section-header">
+            <h2>🔥 Hot Scholarships</h2>
+        </div>
+        <div class="card-row">
+            {% for scholarship in featured_scholarships %}
+            <a href="{% url 'scholarship_detail' scholarship.slug %}" class="card">
+                {% if scholarship.image %}
+                    <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" class="card-image">
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge">{{ scholarship.country.name }}</span>
+                    <div class="card-title">{{ scholarship.title }}</div>
+                    <div class="card-meta">Deadline: {{ scholarship.deadline }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
-{% if deadline_soon %}
-<section>
-    <h2>⏰ Deadline Soon</h2>
-    <ul>
-    {% for scholarship in deadline_soon %}
-        <li>
-            <a href="{% url 'scholarship_detail' scholarship.slug %}">{{ scholarship.title }}</a>
-            — Deadline: {{ scholarship.deadline }}
-        </li>
-    {% endfor %}
-    </ul>
-</section>
-{% endif %}
+    {% if deadline_soon %}
+    <section class="section">
+        <div class="section-header">
+            <h2>⏰ Deadline Soon</h2>
+        </div>
+        <div class="card-row">
+            {% for scholarship in deadline_soon %}
+            <a href="{% url 'scholarship_detail' scholarship.slug %}" class="card">
+                {% if scholarship.image %}
+                    <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" class="card-image">
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge badge-urgent">Deadline: {{ scholarship.deadline }}</span>
+                    <div class="card-title">{{ scholarship.title }}</div>
+                    <div class="card-meta">{{ scholarship.country.name }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
+    <section class="section">
+        <p>
+            <a href="{% url 'submit_scholarship' %}" class="btn btn-outline">Have a Scholarship to Share?</a>
+            <a href="{% url 'request_coaching' %}" class="btn btn-outline">Get 1-on-1 Coaching</a>
+        </p>
+    </section>
 
+    <section class="section">
+        <div class="section-header"><h2>Latest Scholarships</h2></div>
 
-<form method="post" action="{% url 'newsletter_signup' %}">
-    {% csrf_token %}
-    <input type="email" name="email" placeholder="Your email" required>
-    <button type="submit">Get Scholarship Alerts</button>
-</form>
+        <form method="get" class="filter-bar">
+            <select name="country">
+                <option value="">All Countries</option>
+                {% for country in countries %}
+                    <option value="{{ country.slug }}">{{ country.name }}</option>
+                {% endfor %}
+            </select>
 
-<p>
-    <a href="{% url 'submit_scholarship' %}">Have a Scholarship to Share?</a>
-    | <a href="{% url 'request_coaching' %}">Get 1-on-1 Coaching</a>
-</p>
+            <select name="level">
+                <option value="">All Levels</option>
+                {% for value, label in degree_level_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
 
+            <select name="funding">
+                <option value="">All Funding Types</option>
+                {% for value, label in funding_type_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
 
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
 
-    <form method="get">
-    <select name="country">
-        <option value="">All Countries</option>
-        {% for country in countries %}
-            <option value="{{ country.slug }}">{{ country.name }}</option>
-        {% endfor %}
-    </select>
-
-    <select name="level">
-        <option value="">All Levels</option>
-        {% for value, label in degree_level_choices %}
-            <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-    </select>
-
-    <select name="funding">
-        <option value="">All Funding Types</option>
-        {% for value, label in funding_type_choices %}
-            <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-    </select>
-
-    <button type="submit">Filter</button>
-</form>
-
-    {% if scholarships %}
-        <ul>
-        {% for scholarship in scholarships %}
-            <li>
-                <a href="{% url 'scholarship_detail' scholarship.slug %}">
-                    {{ scholarship.title }}
+        {% if scholarships %}
+            <div class="card-grid">
+            {% for scholarship in scholarships %}
+                <a href="{% url 'scholarship_detail' scholarship.slug %}" class="card">
+                    {% if scholarship.image %}
+                        <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" class="card-image">
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge">{{ scholarship.country.name }}</span>
+                        <div class="card-title">{{ scholarship.title }}</div>
+                        <div class="card-meta">{{ scholarship.get_degree_level_display }} &middot; Deadline: {{ scholarship.deadline }}</div>
+                    </div>
                 </a>
-                — {{ scholarship.country.name }}
-                — Deadline: {{ scholarship.deadline }}
-            </li>
-        {% endfor %}
-        </ul>
-        {% if scholarships.has_other_pages %}
-<p>
-    {% if scholarships.has_previous %}
-        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.previous_page_number }}">Previous</a>
-    {% endif %}
-    Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}
-    {% if scholarships.has_next %}
-        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.next_page_number }}">Next</a>
-    {% endif %}
-</p>
-{% endif %}
-    {% else %}
-        <p>No scholarships posted yet.</p>
-    {% endif %}
-</body>
-</html>
+            {% endfor %}
+            </div>
+
+            {% if scholarships.has_other_pages %}
+            <div class="pagination">
+                {% if scholarships.has_previous %}
+                    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.previous_page_number }}">&larr; Previous</a>
+                {% endif %}
+                <span>Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}</span>
+                {% if scholarships.has_next %}
+                    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ scholarships.next_page_number }}">Next &rarr;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <p>No scholarships posted yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

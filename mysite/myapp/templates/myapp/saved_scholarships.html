@@ -1,26 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Saved Scholarships</title>
-</head>
-<body>
+{% extends "myapp/base_public.html" %}
+{% block title %}Your Saved Scholarships{% endblock %}
+
+{% block content %}
+<div class="container section">
     <h1>Your Saved Scholarships</h1>
 
     {% if scholarships %}
-        <ul>
+        <div class="card-grid">
         {% for scholarship in scholarships %}
-            <li>
-                <a href="{% url 'scholarship_detail' scholarship.slug %}">{{ scholarship.title }}</a>
-                — {{ scholarship.country.name }}
-                — Deadline: {{ scholarship.deadline }}
-            </li>
+            <a href="{% url 'scholarship_detail' scholarship.slug %}" class="card">
+                {% if scholarship.image %}
+                    <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" class="card-image">
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge">{{ scholarship.country.name }}</span>
+                    <div class="card-title">{{ scholarship.title }}</div>
+                    <div class="card-meta">Deadline: {{ scholarship.deadline }}</div>
+                </div>
+            </a>
         {% endfor %}
-        </ul>
+        </div>
     {% else %}
         <p>You haven't saved any scholarships yet.</p>
     {% endif %}
 
     <p><a href="{% url 'home' %}">&larr; Back to homepage</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Unsubscribed</title></head>
-<body>
+{% extends "myapp/base_public.html" %}
+{% block title %}Unsubscribed{% endblock %}
+{% block content %}
+<div class="container section">
     <h1>You've been unsubscribed</h1>
     <p>You won't receive any more scholarship alerts from us.</p>
-    <p><a href="{% url 'home' %}">&larr; Back to home</a></p>
-</body>
-</html>
+    <p><a href="{% url 'home' %}" class="btn btn-primary">&larr; Back to home</a></p>
+</div>
+{% endblock %}

@@ -2,15 +2,19 @@
 {% block title %}Coaching Requests{% endblock %}
 {% block content %}
 <h1>Coaching Requests</h1>
-<table border="1">
+<div class="table-wrap">
+<table>
     <tr><th>Name</th><th>Email</th><th>Message</th><th>Received</th></tr>
     {% for req in coaching_requests %}
     <tr>
         <td>{{ req.name }}</td>
         <td>{{ req.email }}</td>
-        <td>{{ req.message }}</td>
+        <td>{{ req.message|truncatewords:15 }}</td>
         <td>{{ req.created_at }}</td>
     </tr>
+    {% empty %}
+    <tr><td colspan="4">No coaching requests yet.</td></tr>
     {% endfor %}
 </table>
+</div>
 {% endblock %}

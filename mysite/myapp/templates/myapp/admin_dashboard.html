@@ -2,9 +2,18 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Admin Dashboard</h1>
-<ul>
-    <li>Total Scholarships: {{ total_scholarships }}</li>
-    <li>Published: {{ published_count }}</li>
-    <li>Total Application Clicks: {{ total_clicks }}</li>
-</ul>
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_scholarships }}</div>
+        <div class="stat-label">Total Scholarships</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ published_count }}</div>
+        <div class="stat-label">Published</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_clicks }}</div>
+        <div class="stat-label">Total Application Clicks</div>
+    </div>
+</div>
 {% endblock %}

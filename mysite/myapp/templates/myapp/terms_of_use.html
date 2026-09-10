@@ -1,0 +1,38 @@
+{% extends "myapp/base_public.html" %}
+{% block title %}Terms of Use{% endblock %}
+{% block content %}
+<div class="container section" style="max-width: 780px;">
+    <h1>Terms of Use</h1>
+    <p><em>Last updated: {% now "F Y" %}</em></p>
+
+    <div class="detail-section">
+        <h2>Using ScholarHub</h2>
+        <p>ScholarHub is a discovery tool that lists scholarship opportunities gathered from public sources and organizations. We do our best to keep listings accurate and up to date, but we are not the provider of any scholarship listed — always verify details on the official application page before applying.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>No Guarantee of Outcome</h2>
+        <p>Listing a scholarship on ScholarHub does not guarantee eligibility, acceptance, or funding. Application decisions are made solely by the scholarship provider.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Submitting a Scholarship</h2>
+        <p>If you submit a scholarship opportunity through our submission form, you confirm the information provided is accurate and that you are authorized to share it. We reserve the right to review, edit, reject, or remove any submission at our discretion.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Coaching Services</h2>
+        <p>Requesting 1-on-1 coaching through our contact form does not create a binding agreement. Pricing, scheduling, and payment for coaching sessions are arranged directly between you and our team after you make contact.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Changes</h2>
+        <p>We may update these terms from time to time. Continued use of the site after changes means you accept the updated terms.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Contact</h2>
+        <p>Questions? Reach us at <a href="mailto:{{ site_contact_email|default:'hello@scholarhub.example' }}">hello@scholarhub.example</a>.</p>
+    </div>
+</div>
+{% endblock %}

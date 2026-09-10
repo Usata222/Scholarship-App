@@ -2,8 +2,9 @@
 {% block title %}Manage Countries{% endblock %}
 {% block content %}
 <h1>Manage Countries</h1>
-<p><a href="{% url 'admin_country_add' %}">+ Add New Country</a></p>
-<table border="1">
+<p><a href="{% url 'admin_country_add' %}" class="btn btn-primary">+ Add New Country</a></p>
+<div class="table-wrap">
+<table>
     <tr><th>Name</th><th>Slug</th><th>Actions</th></tr>
     {% for country in countries %}
     <tr>
@@ -16,4 +17,5 @@
     </tr>
     {% endfor %}
 </table>
+</div>
 {% endblock %}

@@ -1,14 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Submit a Scholarship</title></head>
-<body>
+{% extends "myapp/base_public.html" %}
+{% block title %}Submit a Scholarship{% endblock %}
+
+{% block content %}
+<div class="container section">
     <h1>Have a Scholarship Opportunity?</h1>
     <p>Submit it below — our team will review it before it goes live.</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit for Review</button>
-    </form>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <p class="checkbox-row">
+                <input type="checkbox" id="consent" name="consent" required>
+                <label for="consent">I confirm this information is accurate and I agree to ScholarHub's <a href="{% url 'terms_of_use' %}" target="_blank">Terms of Use</a> and <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.</label>
+            </p>
+            <button type="submit" class="btn btn-primary">Submit for Review</button>
+        </form>
+    </div>
+
     <p><a href="{% url 'home' %}">&larr; Back to home</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

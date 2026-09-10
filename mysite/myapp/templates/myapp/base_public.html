@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ScholarHub{% endblock %} | ScholarHub</title>
+    <meta name="description" content="{% block meta_description %}Find verified scholarships to study abroad — filter by country, degree level, and funding type. No gimmicks, no dead ends.{% endblock %}">
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="{% url 'home' %}" class="brand">
+                <span class="brand-icon">🎓</span>
+                <span><span class="brand-scholar">Scholar</span><span class="brand-hub">Hub</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'saved_scholarships' %}">Saved</a>
+                <a href="{% url 'submit_scholarship' %}">Submit a Scholarship</a>
+                <a href="{% url 'request_coaching' %}">Coaching</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h3>ScholarHub</h3>
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'saved_scholarships' %}">Saved Scholarships</a>
+                </div>
+                <div>
+                    <h3>Get Involved</h3>
+                    <a href="{% url 'submit_scholarship' %}">Submit a Scholarship</a>
+                    <a href="{% url 'request_coaching' %}">1-on-1 Coaching</a>
+                </div>
+                <div>
+                    <h3>Legal</h3>
+                    <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+                    <a href="{% url 'terms_of_use' %}">Terms of Use</a>
+                </div>
+                <div>
+                    <h3>Contact</h3>
+                    <a href="mailto:{{ site_contact_email|default:'hello@scholarhub.example' }}">hello@scholarhub.example</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; {% now "Y" %} ScholarHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

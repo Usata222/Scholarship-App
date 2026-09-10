@@ -1,14 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>1-on-1 Coaching</title></head>
-<body>
+{% extends "myapp/base_public.html" %}
+{% block title %}1-on-1 Coaching{% endblock %}
+
+{% block content %}
+<div class="container section">
     <h1>Need 1-on-1 Scholarship Coaching?</h1>
     <p>Get personalized guidance through your application process. Tell us a bit about what you need help with, and we'll get back to you by email.</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Send Request</button>
-    </form>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <p class="checkbox-row">
+                <input type="checkbox" id="consent" name="consent" required>
+                <label for="consent">I agree to ScholarHub's <a href="{% url 'terms_of_use' %}" target="_blank">Terms of Use</a> and <a href="{% url 'privacy_policy' %}" target="_blank">Privacy Policy</a>.</label>
+            </p>
+            <button type="submit" class="btn btn-primary">Send Request</button>
+        </form>
+    </div>
+
     <p><a href="{% url 'home' %}">&larr; Back to home</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

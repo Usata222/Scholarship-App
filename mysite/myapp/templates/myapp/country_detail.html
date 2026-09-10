@@ -1,36 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Scholarships in {{ country.name }}</title>
-</head>
-<body>
+{% extends "myapp/base_public.html" %}
+{% block title %}Scholarships in {{ country.name }}{% endblock %}
+
+{% block content %}
+<div class="container section">
     <h1>Scholarships in {{ country.name }}</h1>
 
     {% if scholarships %}
-        <ul>
+        <div class="card-grid">
         {% for scholarship in scholarships %}
-            <li>
-                <a href="{% url 'scholarship_detail' scholarship.slug %}">
-                    {{ scholarship.title }}
-                </a>
-                — {{ scholarship.get_degree_level_display }}
-                — Deadline: {{ scholarship.deadline }}
-            </li>
+            <a href="{% url 'scholarship_detail' scholarship.slug %}" class="card">
+                {% if scholarship.image %}
+                    <img src="{{ scholarship.image.url }}" alt="{{ scholarship.title }}" class="card-image">
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge">{{ scholarship.get_degree_level_display }}</span>
+                    <div class="card-title">{{ scholarship.title }}</div>
+                    <div class="card-meta">Deadline: {{ scholarship.deadline }}</div>
+                </div>
+            </a>
         {% endfor %}
-        </ul>
+        </div>
 
         {% if scholarships.has_other_pages %}
-        <p>
-            {% if scholarships.has_previous %}<a href="?page={{ scholarships.previous_page_number }}">Previous</a>{% endif %}
-            Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}
-            {% if scholarships.has_next %}<a href="?page={{ scholarships.next_page_number }}">Next</a>{% endif %}
-        </p>
+        <div class="pagination">
+            {% if scholarships.has_previous %}<a href="?page={{ scholarships.previous_page_number }}">&larr; Previous</a>{% endif %}
+            <span>Page {{ scholarships.number }} of {{ scholarships.paginator.num_pages }}</span>
+            {% if scholarships.has_next %}<a href="?page={{ scholarships.next_page_number }}">Next &rarr;</a>{% endif %}
+        </div>
         {% endif %}
     {% else %}
         <p>No scholarships posted for {{ country.name }} yet.</p>
     {% endif %}
 
     <p><a href="{% url 'home' %}">&larr; Back to all scholarships</a></p>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -2,11 +2,13 @@
 {% block title %}Scholarship Form{% endblock %}
 {% block content %}
 <h1>Scholarship</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+<div class="form-card" style="max-width: 640px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
 <p><a href="{% url 'admin_scholarship_list' %}">&larr; Back to list</a></p>
 
 <script>

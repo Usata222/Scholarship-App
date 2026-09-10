@@ -1,0 +1,33 @@
+{% extends "myapp/base_public.html" %}
+{% block title %}Privacy Policy{% endblock %}
+{% block content %}
+<div class="container section" style="max-width: 780px;">
+    <h1>Privacy Policy</h1>
+    <p><em>Last updated: {% now "F Y" %}</em></p>
+
+    <div class="detail-section">
+        <h2>What We Collect</h2>
+        <p>When you use ScholarHub, we may collect: your email address (if you sign up for scholarship alerts, submit a scholarship, or request coaching), the scholarships you save (stored in your browser session, not linked to your identity unless you provide an email), and basic usage data such as which scholarships are viewed and clicked.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>How We Use It</h2>
+        <p>We use your email to send scholarship alerts you've signed up for, to respond to submissions and coaching requests, and to notify you about the status of anything you've submitted. We use anonymous click and view data to understand which scholarships and countries are most useful to visitors, so we can prioritize sourcing more of them.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>What We Don't Do</h2>
+        <p>We do not sell your email address or personal data to third parties. We do not share your information with advertisers.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Your Choices</h2>
+        <p>You can unsubscribe from scholarship alerts at any time using the link included in every email we send. You can clear your saved scholarships at any time by clearing your browser's cookies for this site.</p>
+    </div>
+
+    <div class="detail-section">
+        <h2>Contact</h2>
+        <p>Questions about this policy? Reach us at <a href="mailto:{{ site_contact_email|default:'hello@scholarhub.example' }}">hello@scholarhub.example</a>.</p>
+    </div>
+</div>
+{% endblock %}
