@@ -7,6 +7,9 @@
     <title>{% block title %}ScholarHub{% endblock %} | ScholarHub</title>
     <meta name="description" content="{% block meta_description %}Find verified scholarships to study abroad — filter by country, degree level, and funding type. No gimmicks, no dead ends.{% endblock %}">
     <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+    <link rel="icon" href="{% static 'myapp/favicon.ico' %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+    
     {% block extra_head %}{% endblock %}
 </head>
 <body>

@@ -20,7 +20,13 @@ from myapp import views #importing the views from myapp to use in the urls.py fi
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.contrib.sitemaps.views import sitemap
+from myapp.sitemaps import ScholarshipSitemap, CountrySitemap
 
+sitemaps = {
+    'scholarships': ScholarshipSitemap,
+    'countries': CountrySitemap,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,7 +58,7 @@ urlpatterns = [
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-use/', views.terms_of_use, name='terms_of_use'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
-
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 
     path('dashboard/password-reset/', auth_views.PasswordResetView.as_view(
         template_name='myapp/password_reset_form.html',
