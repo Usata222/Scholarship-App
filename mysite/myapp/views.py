@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import Scholarship, Country, ScholarshipSubmission, CoachingRequest, NewsletterSubscriber
 from .forms import ScholarshipForm, CountryForm, SubmissionForm, CoachingRequestForm, NewsletterForm
+from django_ratelimit.decorators import ratelimit
 
 
 @login_required
@@ -120,6 +121,9 @@ def admin_dashboard(request): # this function is decorated with the @login_requi
     }
     return render(request, "myapp/admin_dashboard.html", context)
 
+
+
+@ratelimit(key='ip', rate='5/m', block=True)
 def admin_login(request): # this function handles the login process for the admin user. It checks if the request method is POST, retrieves the username and password from the request, and uses Django's built-in authenticate function to verify the credentials. If the authentication is successful, it logs in the user and redirects them to the admin dashboard. If authentication fails, it renders the login page again with an error message. If the request method is not POST, it simply renders the login page.
     if request.method == "POST":
         username = request.POST.get("username")
