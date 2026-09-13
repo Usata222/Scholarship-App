@@ -123,7 +123,7 @@ def admin_dashboard(request): # this function is decorated with the @login_requi
 
 
 
-@ratelimit(key='ip', rate='5/m', block=True)
+@ratelimit(key='ip', rate='5/m', block=True) # this decorator is used to limit the rate of requests to the decorated view function. In this case, it limits the number of requests from a single IP address to 5 requests per minute. If the limit is exceeded, the request will be blocked, and the user will receive a response indicating that they have exceeded the allowed rate. This is useful for preventing abuse or excessive traffic to certain views, such as login pages or forms.
 def admin_login(request): # this function handles the login process for the admin user. It checks if the request method is POST, retrieves the username and password from the request, and uses Django's built-in authenticate function to verify the credentials. If the authentication is successful, it logs in the user and redirects them to the admin dashboard. If authentication fails, it renders the login page again with an error message. If the request method is not POST, it simply renders the login page.
     if request.method == "POST":
         username = request.POST.get("username")
