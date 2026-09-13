@@ -374,6 +374,19 @@ def notify_subscribers_of_new_scholarship(scholarship):
 
 
 
+from django.http import HttpResponse
+
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /dashboard/",
+        "Sitemap: " + settings.SITE_URL + "/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+
+
 
 
 

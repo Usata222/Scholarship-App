@@ -51,7 +51,7 @@ urlpatterns = [
     path('newsletter/unsubscribe/<uuid:token>/', views.newsletter_unsubscribe, name='newsletter_unsubscribe'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-use/', views.terms_of_use, name='terms_of_use'),
-    
+    path('robots.txt', views.robots_txt, name='robots_txt'),
 
 
     path('dashboard/password-reset/', auth_views.PasswordResetView.as_view(
