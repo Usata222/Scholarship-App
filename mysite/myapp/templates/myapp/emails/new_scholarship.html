@@ -1,0 +1,10 @@
+{% extends "myapp/emails/email_base.html" %}
+{% block content %}
+<span class="badge">New Scholarship</span>
+<h1>{{ scholarship.title }}</h1>
+<p class="meta"><strong>Country:</strong> {{ scholarship.country.name }}</p>
+<p class="meta"><strong>Degree Level:</strong> {{ scholarship.get_degree_level_display }}</p>
+<p class="meta"><strong>Deadline:</strong> {{ scholarship.deadline }}</p>
+<p>{{ scholarship.description|truncatewords:30 }}</p>
+<p><a href="{{ scholarship_link }}" class="btn">View Scholarship</a></p>
+{% endblock %}

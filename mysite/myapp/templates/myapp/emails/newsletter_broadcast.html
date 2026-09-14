@@ -1,0 +1,6 @@
+{% extends "myapp/emails/email_base.html" %}
+{% block content %}
+<h1>{{ subject }}</h1>
+<p>{{ message|linebreaksbr }}</p>
+<p><a href="{{ site_url }}" class="btn">Visit Scholarra</a></p>
+{% endblock %}

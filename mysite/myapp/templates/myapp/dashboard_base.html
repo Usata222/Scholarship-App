@@ -4,19 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin{% endblock %} | ScholarHub</title>
+    <title>{% block title %}Admin{% endblock %} | Scholarra</title>
     <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
     <link rel="icon" href="{% static 'myapp/favicon.ico' %}">
 </head>
 <body>
     <nav class="dashboard-nav">
         <div class="container">
-            <a href="{% url 'admin_dashboard' %}" style="color:#fff; font-weight:700;">ScholarHub Admin</a>
+            <a href="{% url 'admin_dashboard' %}" style="color:#fff; font-weight:700;">Scholarra Admin</a>
             <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'admin_statistics' %}">Statistics</a>
             <a href="{% url 'admin_scholarship_list' %}">Scholarships</a>
             <a href="{% url 'admin_country_list' %}">Countries</a>
             <a href="{% url 'admin_submission_list' %}">Submissions</a>
             <a href="{% url 'admin_coaching_list' %}">Coaching Requests</a>
+            <a href="{% url 'admin_send_newsletter' %}">Send Newsletter</a>
             <a href="{% url 'admin_logout' %}">Log Out</a>
         </div>
     </nav>

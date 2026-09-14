@@ -43,3 +43,8 @@ class NewsletterForm(forms.ModelForm):
     class Meta:
         model = NewsletterSubscriber
         fields = ["email"]
+
+class NewsletterBroadcastForm(forms.Form):
+    subject = forms.CharField(max_length=200)
+    message = forms.CharField(widget=forms.Textarea)
+

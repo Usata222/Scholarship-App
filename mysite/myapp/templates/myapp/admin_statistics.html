@@ -1,0 +1,208 @@
+{% extends "myapp/dashboard_base.html" %}
+{% block title %}Statistics{% endblock %}
+{% block content %}
+<h1>Statistics</h1>
+<p style="color:var(--slate-light); margin-top:-0.5rem;">{{ start_date }} to {{ end_date }}</p>
+
+<div style="margin-bottom:1.5rem;">
+    <a href="?range=today" class="btn {% if range_param == 'today' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Today</a>
+    <a href="?range=7" class="btn {% if range_param == '7' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Last 7 Days</a>
+    <a href="?range=30" class="btn {% if range_param == '30' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Last 30 Days</a>
+    <a href="?range=90" class="btn {% if range_param == '90' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Last 3 Months</a>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.total_visitors }}</div>
+        <div class="stat-label">Visitors
+            {% if overview.total_visitors_change is not None %}
+                <br>{% if overview.total_visitors_change >= 0 %}▲{% else %}▼{% endif %} {{ overview.total_visitors_change }}% vs previous period
+            {% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.total_page_views }}</div>
+        <div class="stat-label">Total Page Views
+            {% if overview.total_page_views_change is not None %}
+                <br>{% if overview.total_page_views_change >= 0 %}▲{% else %}▼{% endif %} {{ overview.total_page_views_change }}% vs previous period
+            {% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.scholarship_page_views }}</div>
+        <div class="stat-label">Scholarship Page Views</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.application_clicks }}</div>
+        <div class="stat-label">Application Clicks
+            {% if overview.application_clicks_change is not None %}
+                <br>{% if overview.application_clicks_change >= 0 %}▲{% else %}▼{% endif %} {{ overview.application_clicks_change }}% vs previous period
+            {% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.ctr }}%</div>
+        <div class="stat-label">Application CTR</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.newsletter_signups }}</div>
+        <div class="stat-label">Newsletter Signups</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.scholarship_submissions }}</div>
+        <div class="stat-label">Scholarship Submissions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ overview.saves_count }}</div>
+        <div class="stat-label">Scholarships Saved</div>
+    </div>
+</div>
+
+<h2>Visitor Trend</h2>
+{% if trend_labels %}
+<div class="form-card" style="max-width: 100%;">
+    <canvas id="trendChart" height="80"></canvas>
+</div>
+{% else %}
+<p>No traffic recorded yet in this period.</p>
+{% endif %}
+
+<h2>Traffic Sources</h2>
+{% if traffic_sources %}
+<div class="table-wrap">
+<table>
+    <tr><th>Source</th><th>Events</th></tr>
+    {% for source, count in traffic_sources %}
+    <tr><td>{{ source }}</td><td>{{ count }}</td></tr>
+    {% endfor %}
+</table>
+</div>
+<p style="font-size:0.85rem; color:var(--slate-light);">Note: TikTok and Instagram's in-app browsers often strip referrer data, so genuinely social-driven traffic may still show as "Direct / Unknown" unless links are tagged with a <code>?utm_source=</code> parameter.</p>
+{% else %}
+<p>No traffic data yet.</p>
+{% endif %}
+
+<h2>Most Viewed Scholarships</h2>
+{% if most_viewed_table %}
+<div class="table-wrap">
+<table>
+    <tr><th>Scholarship</th><th>Views</th><th>Clicks</th><th>CTR</th></tr>
+    {% for row in most_viewed_table %}
+    <tr><td>{{ row.title }}</td><td>{{ row.views }}</td><td>{{ row.clicks }}</td><td>{{ row.ctr }}%</td></tr>
+    {% endfor %}
+</table>
+</div>
+{% else %}
+<p>No scholarship views recorded in this period.</p>
+{% endif %}
+
+<h2>Most Clicked Scholarships</h2>
+{% if most_clicked_table %}
+<div class="table-wrap">
+<table>
+    <tr><th>Scholarship</th><th>Views</th><th>Clicks</th><th>CTR</th></tr>
+    {% for row in most_clicked_table %}
+    <tr><td>{{ row.title }}</td><td>{{ row.views }}</td><td>{{ row.clicks }}</td><td>{{ row.ctr }}%</td></tr>
+    {% endfor %}
+</table>
+</div>
+{% else %}
+<p>No application clicks recorded in this period.</p>
+{% endif %}
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+    <div>
+        <h2>Popular Categories</h2>
+        {% if popular_degree_levels or popular_funding_types %}
+        <div class="table-wrap">
+        <table>
+            <tr><th>Category</th><th>Views</th></tr>
+            {% for row in popular_degree_levels %}
+            <tr><td>{{ row.label }}</td><td>{{ row.count }}</td></tr>
+            {% endfor %}
+            {% for row in popular_funding_types %}
+            <tr><td>{{ row.label }}</td><td>{{ row.count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+        <p>No data yet.</p>
+        {% endif %}
+    </div>
+    <div>
+        <h2>Popular Study Destinations</h2>
+        {% if popular_destinations %}
+        <div class="table-wrap">
+        <table>
+            <tr><th>Country</th><th>Views</th></tr>
+            {% for row in popular_destinations %}
+            <tr><td>{{ row.scholarship__country__name }}</td><td>{{ row.count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+        <p>No data yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<h2>Search / Filter Analytics</h2>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+    <div>
+        <h3 style="font-size:0.95rem;">Most Used Filters</h3>
+        {% if top_searches %}
+        <div class="table-wrap">
+        <table>
+            <tr><th>Filter Combination</th><th>Times Used</th></tr>
+            {% for row in top_searches %}
+            <tr><td>{{ row.search_summary }}</td><td>{{ row.count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+        <p>No filter usage yet.</p>
+        {% endif %}
+    </div>
+    <div>
+        <h3 style="font-size:0.95rem;">Zero-Result Searches (content gaps)</h3>
+        {% if zero_result_searches %}
+        <div class="table-wrap">
+        <table>
+            <tr><th>Filter Combination</th><th>Times</th></tr>
+            {% for row in zero_result_searches %}
+            <tr><td>{{ row.search_summary }}</td><td>{{ row.count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+        <p>No zero-result searches in this period — good sign.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+{% if trend_labels %}
+const ctx = document.getElementById('trendChart');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ trend_labels_json|safe }},
+        datasets: [{
+            label: 'Page Views',
+            data: {{ trend_values_json|safe }},
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            tension: 0.3,
+            fill: true,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

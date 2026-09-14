@@ -1,3 +1,4 @@
+import json
 from django.db.models import F, Sum # The F() function is used to reference the value of a model field in a query, allowing for database-level operations without having to retrieve the object into Python memory first. In this case, it is used to increment the click_count field of the Scholarship model directly in the database.
 from .models import Scholarship, Country
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,10 +9,14 @@ from django.contrib.auth.decorators import login_required
 from .forms import ScholarshipForm
 from .forms import ScholarshipForm, CountryForm
 from django.core.paginator import Paginator
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
-from .models import Scholarship, Country, ScholarshipSubmission, CoachingRequest, NewsletterSubscriber
-from .forms import ScholarshipForm, CountryForm, SubmissionForm, CoachingRequestForm, NewsletterForm
+from .models import Scholarship, Country, ScholarshipSubmission, CoachingRequest, NewsletterSubscriber, AnalyticsEvent
+from .analytics import log_event
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from .forms import ScholarshipForm, CountryForm, SubmissionForm, CoachingRequestForm, NewsletterForm, NewsletterBroadcastForm
 from django_ratelimit.decorators import ratelimit
 
 
@@ -122,6 +127,205 @@ def admin_dashboard(request): # this function is decorated with the @login_requi
     return render(request, "myapp/admin_dashboard.html", context)
 
 
+@login_required
+def admin_statistics(request):
+    # Date-range selection: a few preset windows, defaulting to "last 30 days".
+    range_param = request.GET.get('range', '30')
+    today = timezone.now().date()
+
+    range_days_map = {'today': 0, '7': 7, '30': 30, '90': 90}
+    days = range_days_map.get(range_param, 30)
+    start_date = today - timedelta(days=days)
+    end_date = today
+
+    # The previous period of equal length, used for the "up/down vs previous period" comparisons.
+    period_length = (end_date - start_date).days + 1
+    previous_end = start_date - timedelta(days=1)
+    previous_start = previous_end - timedelta(days=period_length - 1)
+
+    current_events = AnalyticsEvent.objects.filter(created_at__date__range=[start_date, end_date])
+    previous_events = AnalyticsEvent.objects.filter(created_at__date__range=[previous_start, previous_end])
+
+    def percent_change(current, previous):
+        if previous == 0:
+            return None  # no meaningful percentage when there's nothing to compare against
+        return round(((current - previous) / previous) * 100, 1)
+
+    # ---- 1. Overview metrics ----
+    total_visitors = current_events.exclude(session_key="").values('session_key').distinct().count()
+    previous_visitors = previous_events.exclude(session_key="").values('session_key').distinct().count()
+
+    total_page_views = current_events.filter(event_type__in=["page_view", "scholarship_view"]).count()
+    previous_page_views = previous_events.filter(event_type__in=["page_view", "scholarship_view"]).count()
+
+    scholarship_page_views = current_events.filter(event_type="scholarship_view").count()
+    application_clicks = current_events.filter(event_type="application_click").count()
+    previous_clicks = previous_events.filter(event_type="application_click").count()
+
+    ctr = round((application_clicks / scholarship_page_views) * 100, 1) if scholarship_page_views else 0
+
+    newsletter_signups = NewsletterSubscriber.objects.filter(created_at__date__range=[start_date, end_date]).count()
+    scholarship_submissions = ScholarshipSubmission.objects.filter(submitted_at__date__range=[start_date, end_date]).count()
+    saves_count = current_events.filter(event_type="save").count()
+    searches_count = current_events.filter(event_type="search").count()
+
+    overview = {
+        "total_visitors": total_visitors,
+        "total_visitors_change": percent_change(total_visitors, previous_visitors),
+        "total_page_views": total_page_views,
+        "total_page_views_change": percent_change(total_page_views, previous_page_views),
+        "scholarship_page_views": scholarship_page_views,
+        "application_clicks": application_clicks,
+        "application_clicks_change": percent_change(application_clicks, previous_clicks),
+        "ctr": ctr,
+        "newsletter_signups": newsletter_signups,
+        "scholarship_submissions": scholarship_submissions,
+        "saves_count": saves_count,
+        "searches_count": searches_count,
+    }
+
+    # ---- 2. Visitor trend (for a simple line chart) ----
+    daily_trend = (
+        current_events.filter(event_type__in=["page_view", "scholarship_view"])
+        .annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(count=Count("id"))
+        .order_by("day")
+    )
+    trend_labels = [entry["day"].strftime("%b %d") for entry in daily_trend]
+    trend_values = [entry["count"] for entry in daily_trend]
+    trend_labels_json = json.dumps(trend_labels)
+    trend_values_json = json.dumps(trend_values)
+
+    # ---- 3. Traffic sources ----
+    # Groups by utm_source when present; otherwise falls back to the referrer's
+    # domain so "google.com/search..." becomes just "google.com". Blank/unset
+    # is bucketed as Direct/Unknown -- this is genuinely common (TikTok/Instagram's
+    # in-app browsers often strip the referrer header entirely).
+    source_counts = {}
+    for event in current_events.exclude(event_type="save").only("utm_source", "referrer"):
+        if event.utm_source:
+            source = event.utm_source
+        elif event.referrer:
+            source = event.referrer.split("/")[2] if "//" in event.referrer else event.referrer
+        else:
+            source = "Direct / Unknown"
+        source_counts[source] = source_counts.get(source, 0) + 1
+    traffic_sources = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)[:6]
+
+    # ---- 5 & 6. Most viewed / most clicked scholarships ----
+    most_viewed = (
+        current_events.filter(event_type="scholarship_view")
+        .values("scholarship__id", "scholarship__title")
+        .annotate(views=Count("id"))
+        .order_by("-views")[:10]
+    )
+    clicks_by_scholarship = dict(
+        current_events.filter(event_type="application_click")
+        .values("scholarship__id")
+        .annotate(clicks=Count("id"))
+        .values_list("scholarship__id", "clicks")
+    )
+    most_viewed_table = []
+    for row in most_viewed:
+        clicks = clicks_by_scholarship.get(row["scholarship__id"], 0)
+        views = row["views"]
+        most_viewed_table.append({
+            "title": row["scholarship__title"],
+            "views": views,
+            "clicks": clicks,
+            "ctr": round((clicks / views) * 100, 1) if views else 0,
+        })
+
+    most_clicked = (
+        current_events.filter(event_type="application_click")
+        .values("scholarship__id", "scholarship__title")
+        .annotate(clicks=Count("id"))
+        .order_by("-clicks")[:10]
+    )
+    views_by_scholarship = dict(
+        current_events.filter(event_type="scholarship_view")
+        .values("scholarship__id")
+        .annotate(views=Count("id"))
+        .values_list("scholarship__id", "views")
+    )
+    most_clicked_table = []
+    for row in most_clicked:
+        clicks = row["clicks"]
+        views = views_by_scholarship.get(row["scholarship__id"], 0)
+        most_clicked_table.append({
+            "title": row["scholarship__title"],
+            "views": views,
+            "clicks": clicks,
+            "ctr": round((clicks / views) * 100, 1) if views else 0,
+        })
+
+    # ---- 7. Popular categories & 8. Popular study destinations ----
+    popular_degree_levels_raw = (
+        current_events.filter(event_type="scholarship_view")
+        .values("scholarship__degree_level")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    )
+    degree_level_labels = dict(Scholarship.DEGREE_LEVEL_CHOICES)
+    popular_degree_levels = [
+        {"label": degree_level_labels.get(row["scholarship__degree_level"], row["scholarship__degree_level"]), "count": row["count"]}
+        for row in popular_degree_levels_raw if row["scholarship__degree_level"]
+    ]
+
+    popular_funding_types_raw = (
+        current_events.filter(event_type="scholarship_view")
+        .values("scholarship__funding_type")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    )
+    funding_type_labels = dict(Scholarship.FUNDING_TYPE_CHOICES)
+    popular_funding_types = [
+        {"label": funding_type_labels.get(row["scholarship__funding_type"], row["scholarship__funding_type"]), "count": row["count"]}
+        for row in popular_funding_types_raw if row["scholarship__funding_type"]
+    ]
+    popular_destinations = (
+        current_events.filter(event_type="scholarship_view")
+        .values("scholarship__country__name")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:8]
+    )
+
+    # ---- 9. Search analytics ----
+    top_searches = (
+        current_events.filter(event_type="search")
+        .values("search_summary")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:10]
+    )
+    zero_result_searches = (
+        current_events.filter(event_type="search", result_count=0)
+        .values("search_summary")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:10]
+    )
+
+    context = {
+        "range_param": range_param,
+        "start_date": start_date,
+        "end_date": end_date,
+        "overview": overview,
+        "trend_labels": trend_labels,
+        "trend_labels_json": trend_labels_json,
+        "trend_values_json": trend_values_json,
+        "trend_values": trend_values,
+        "traffic_sources": traffic_sources,
+        "most_viewed_table": most_viewed_table,
+        "most_clicked_table": most_clicked_table,
+        "popular_degree_levels": popular_degree_levels,
+        "popular_funding_types": popular_funding_types,
+        "popular_destinations": popular_destinations,
+        "top_searches": top_searches,
+        "zero_result_searches": zero_result_searches,
+    }
+    return render(request, "myapp/admin_statistics.html", context)
+
+
 
 @ratelimit(key='ip', rate='5/m', block=True) # this decorator is used to limit the rate of requests to the decorated view function. In this case, it limits the number of requests from a single IP address to 5 requests per minute. If the limit is exceeded, the request will be blocked, and the user will receive a response indicating that they have exceeded the allowed rate. This is useful for preventing abuse or excessive traffic to certain views, such as login pages or forms.
 def admin_login(request): # this function handles the login process for the admin user. It checks if the request method is POST, retrieves the username and password from the request, and uses Django's built-in authenticate function to verify the credentials. If the authentication is successful, it logs in the user and redirects them to the admin dashboard. If authentication fails, it renders the login page again with an error message. If the request method is not POST, it simply renders the login page.
@@ -156,6 +360,7 @@ def scholarship_detail(request, slug): # every django view function takes at lea
     scholarship = get_object_or_404(Scholarship, slug=slug, is_published=True) # it fetches the scholarship object from the database based on the slug and is_published=True, if it doesn't find it, it raises a 404 error
     scholarship.view_count = scholarship.view_count + 1 # incrementing the view count of the scholarship by 1 every time the scholarship detail page is accessed
     scholarship.save(update_fields=["view_count"])
+    log_event(request, "scholarship_view", scholarship=scholarship)  # analytics: records this view for the Statistics page
     context = {                       # passing data to the template using a context dictionary, which is a way to pass data from the view to the template
         "scholarship": scholarship,
     }
@@ -189,6 +394,25 @@ def home(request):
     page_number = request.GET.get('page')
     scholarships_page = paginator.get_page(page_number)
 
+    # analytics: every homepage load counts as a page view
+    log_event(request, "page_view", page_path=request.path)
+
+    # analytics: if any filter was actually used, log it as a "search" event.
+    # This is what powers the "most searched" and "zero-result searches" sections.
+    filters_used = []
+    if country_slug:
+        filters_used.append(f"country={country_slug}")
+    if degree_level:
+        filters_used.append(f"level={degree_level}")
+    if funding_type:
+        filters_used.append(f"funding={funding_type}")
+    if filters_used:
+        log_event(
+            request, "search",
+            search_summary=", ".join(filters_used),
+            result_count=paginator.count,
+        )
+
     querydict = request.GET.copy()
     if 'page' in querydict:
         del querydict['page']
@@ -210,6 +434,8 @@ def country_detail(request, slug):
     country = get_object_or_404(Country, slug=slug)
     scholarships = country.scholarships.filter(is_published=True).order_by('-created_at')
 
+    log_event(request, "page_view", page_path=request.path)  # analytics: counts as a page view
+
     paginator = Paginator(scholarships, 12)
     page_number = request.GET.get('page')
     scholarships_page = paginator.get_page(page_number)
@@ -224,6 +450,7 @@ def country_detail(request, slug):
 def scholarship_redirect(request, slug):
     scholarship = get_object_or_404(Scholarship, slug=slug, is_published=True)
     Scholarship.objects.filter(pk=scholarship.pk).update(click_count=F('click_count') + 1)
+    log_event(request, "application_click", scholarship=scholarship)  # analytics: records the click for CTR
     return redirect(scholarship.application_link)
 
 
@@ -235,6 +462,7 @@ def toggle_save(request, slug): # this function is used to toggle the saved stat
         saved.remove(scholarship.pk) # this line checks if the primary key (pk) of the scholarship is already in the saved list. If it is, it removes the pk from the list, effectively "unsaving" the scholarship for the user.
     else:
         saved.append(scholarship.pk) # if the scholarship's pk is not in the saved list, this line adds it to the list, effectively "saving" the scholarship for the user.
+        log_event(request, "save", scholarship=scholarship)  # analytics: only log on save, not unsave
 
     request.session['saved_scholarships'] = saved # this line updates the user's session with the modified list of saved scholarships. It ensures that the changes made to the saved list (either adding or removing a scholarship) are persisted in the session data.
     return redirect('scholarship_detail', slug=slug)
@@ -326,7 +554,7 @@ def admin_submission_review(request, pk):
             submission.save()
             send_mail(
                 subject="Your scholarship submission was approved",
-                message=f"Hi, your submission '{submission.title}' is now live on ScholarHub.",
+                message=f"Hi, your submission '{submission.title}' is now live on Scholarra.",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[submission.contact_email],
             )
@@ -335,7 +563,7 @@ def admin_submission_review(request, pk):
             submission.save()
             send_mail(
                 subject="Your scholarship submission was not approved",
-                message=f"Hi, your submission '{submission.title}' was not approved for listing on ScholarHub.",
+                message=f"Hi, your submission '{submission.title}' was not approved for listing on Scholarra.",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[submission.contact_email],
             )
@@ -353,21 +581,78 @@ def admin_coaching_list(request):
     return render(request, "myapp/admin_coaching_list.html", context)
 
 
+@login_required
+def admin_send_newsletter(request):
+    # Lets the admin write a one-off newsletter message and blast it to every
+    # subscriber immediately, using the same styled HTML email layout as the
+    # automatic "new scholarship" notification.
+    sent_count = None
+
+    if request.method == "POST":
+        form = NewsletterBroadcastForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data["subject"]
+            message = form.cleaned_data["message"]
+            subscribers = NewsletterSubscriber.objects.all()
+
+            for subscriber in subscribers:
+                unsubscribe_link = request_build_unsubscribe_link(subscriber)
+
+                html_body = render_to_string("myapp/emails/newsletter_broadcast.html", {
+                    "subject": subject,
+                    "message": message,
+                    "site_url": settings.SITE_URL,
+                    "unsubscribe_link": unsubscribe_link,
+                })
+
+                email = EmailMultiAlternatives(
+                    subject=subject,
+                    body=f"{message}\n\nUnsubscribe: {unsubscribe_link}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[subscriber.email],
+                )
+                email.attach_alternative(html_body, "text/html")
+                email.send()
+
+            sent_count = subscribers.count()
+            form = NewsletterBroadcastForm()
+    else:
+        form = NewsletterBroadcastForm()
+
+    context = {"form": form, "sent_count": sent_count}
+    return render(request, "myapp/admin_send_newsletter.html", context)
+
+
 def notify_subscribers_of_new_scholarship(scholarship):
+    # Sends a styled HTML email (myapp/emails/new_scholarship.html) to every subscriber,
+    # with a plain-text version attached as a fallback for email clients that don't render HTML.
     subscribers = NewsletterSubscriber.objects.all()
+    scholarship_link = f"{settings.SITE_URL}/scholarship/{scholarship.slug}/"
+
     for subscriber in subscribers:
         unsubscribe_link = request_build_unsubscribe_link(subscriber)
-        send_mail(
-            subject=f"New Scholarship: {scholarship.title}",
-            message=(
-                f"{scholarship.title} — {scholarship.country.name}\n"
-                f"Deadline: {scholarship.deadline}\n\n"
-                f"View it: {settings.SITE_URL}/scholarship/{scholarship.slug}/\n\n"
-                f"Unsubscribe: {unsubscribe_link}"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[subscriber.email],
+
+        plain_text_body = (
+            f"{scholarship.title} — {scholarship.country.name}\n"
+            f"Deadline: {scholarship.deadline}\n\n"
+            f"View it: {scholarship_link}\n\n"
+            f"Unsubscribe: {unsubscribe_link}"
         )
+
+        html_body = render_to_string("myapp/emails/new_scholarship.html", {
+            "scholarship": scholarship,
+            "scholarship_link": scholarship_link,
+            "unsubscribe_link": unsubscribe_link,
+        })
+
+        email = EmailMultiAlternatives(
+            subject=f"New Scholarship: {scholarship.title}",
+            body=plain_text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[subscriber.email],
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send()
 
 
 

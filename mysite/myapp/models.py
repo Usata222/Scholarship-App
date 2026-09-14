@@ -49,6 +49,39 @@ class Scholarship(models.Model):
         return self.title
 
 
+class AnalyticsEvent(models.Model):
+    # One table for every tracked event type, instead of a separate model per event.
+    # Each row is a single thing that happened: a page view, a scholarship view,
+    # an application click, a search/filter, or a save.
+    EVENT_TYPE_CHOICES = [
+        ("page_view", "Page View"),
+        ("scholarship_view", "Scholarship View"),
+        ("application_click", "Application Click"),
+        ("search", "Search / Filter"),
+        ("save", "Scholarship Saved"),
+    ]
+
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES, db_index=True)
+    scholarship = models.ForeignKey(
+        Scholarship, on_delete=models.SET_NULL, null=True, blank=True, related_name="analytics_events"
+    )
+    page_path = models.CharField(max_length=255, blank=True)
+    search_summary = models.CharField(max_length=255, blank=True)  # e.g. "country=germany, level=masters"
+    result_count = models.PositiveIntegerField(null=True, blank=True)  # only set for 'search' events
+
+    # session_key (not the visitor's IP) stands in for "one visitor" -- an opaque,
+    # rotating token Django already manages, so we get visitor counts without
+    # permanently storing anything that identifies a real person.
+    session_key = models.CharField(max_length=40, blank=True)
+    utm_source = models.CharField(max_length=100, blank=True)
+    referrer = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M}"
+
+
 class ScholarshipSubmission(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending Review"),
