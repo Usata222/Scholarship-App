@@ -9,11 +9,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Django
-db.sqlite3
-*.log
-media/
-staticfiles/
+# # Django
+# db.sqlite3
+# *.log
+# media/
+# staticfiles/
 
 # IDE
 .vscode/
