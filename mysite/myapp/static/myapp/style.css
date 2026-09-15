@@ -89,6 +89,22 @@ h2 { font-size: 1.35rem; }
 }
 .main-nav a:hover { color: #fff; text-decoration: none; }
 
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+}
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
@@ -310,7 +326,22 @@ th { background: #f1f5f9; color: var(--slate); font-size: 0.8rem; text-transform
 
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
-  .main-nav { display: none; }
+  .nav-toggle { display: flex; }
+  .main-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--navy);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0.5rem 1.25rem 1rem;
+  }
+  .main-nav.nav-open { display: flex; }
+  .main-nav a { padding: 0.6rem 0; width: 100%; }
+  .site-header { position: relative; }
   .hero h1 { font-size: 1.4rem; }
   .card-row { grid-auto-columns: minmax(200px, 1fr); }
   h1 { font-size: 1.5rem; }
