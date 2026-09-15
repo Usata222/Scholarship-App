@@ -1,0 +1,9 @@
+{% extends "myapp/emails/email_base.html" %}
+{% block content %}
+<span class="badge">⏰ Closing Soon</span>
+<h1>{{ scholarship.title }}</h1>
+<p class="meta"><strong>Country:</strong> {{ scholarship.country.name }}</p>
+<p class="meta"><strong>Deadline:</strong> {{ scholarship.deadline }} ({{ days_left }} day{{ days_left|pluralize }} left)</p>
+<p>This scholarship is closing soon. If you've been thinking about applying, now's the time.</p>
+<p><a href="{{ scholarship_link }}" class="btn">View & Apply</a></p>
+{% endblock %}

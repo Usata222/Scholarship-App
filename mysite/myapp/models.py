@@ -38,6 +38,7 @@ class Scholarship(models.Model):
     image = models.ImageField(upload_to='scholarships/', blank=True, null=True)
 
     is_featured = models.BooleanField(default=False)
+    deadline_reminder_sent = models.BooleanField(default=False)  # prevents sending the "closing soon" email more than once per scholarship
     is_published = models.BooleanField(default=False) #default=False means that this new scholarship will not be published by default, it will be published only when the admin approves it
     view_count = models.PositiveIntegerField(default=0)
     click_count = models.PositiveIntegerField(default=0)

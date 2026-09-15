@@ -56,6 +56,7 @@ urlpatterns = [
     path('dashboard/submissions/<int:pk>/', views.admin_submission_review, name='admin_submission_review'),
     path('dashboard/coaching/', views.admin_coaching_list, name='admin_coaching_list'),
     path('dashboard/newsletter/send/', views.admin_send_newsletter, name='admin_send_newsletter'),
+    path('cron/send-deadline-reminders/', views.trigger_deadline_reminders, name='trigger_deadline_reminders'),
     path('newsletter/unsubscribe/<uuid:token>/', views.newsletter_unsubscribe, name='newsletter_unsubscribe'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-use/', views.terms_of_use, name='terms_of_use'),

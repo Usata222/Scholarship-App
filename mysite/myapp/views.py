@@ -79,15 +79,16 @@ def admin_scholarship_delete(request, pk): # this function is decorated with the
     return render(request, "myapp/admin_scholarship_delete.html", context)
 
 @login_required
-def admin_scholarship_edit(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to edit its details using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the changes and checks if the scholarship was published. If it was not published before but is now published, it calls a function to notify subscribers of the new scholarship. Finally, it redirects to the scholarship list. If the request method is GET, it displays the form pre-filled with the scholarship's current details.
+def admin_scholarship_edit(request, pk): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function retrieves a Scholarship object based on its primary key (pk) and allows the admin user to edit its details using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the changes. Whether subscribers get notified now depends on which button the admin clicked -- "Save" just saves, "Save & Notify Subscribers" saves and sends the email. Finally, it redirects to the scholarship list. If the request method is GET, it displays the form pre-filled with the scholarship's current details.
     scholarship = get_object_or_404(Scholarship, pk=pk)
-    was_published = scholarship.is_published
 
     if request.method == "POST":
         form = ScholarshipForm(request.POST, request.FILES, instance=scholarship)
         if form.is_valid():
             scholarship = form.save()
-            if not was_published and scholarship.is_published:
+            if request.POST.get("action") == "save_and_notify" and scholarship.is_published:
+                # guard: never email subscribers a link to a still-unpublished scholarship --
+                # that link would 404 for them, since scholarship_detail only serves published ones
                 notify_subscribers_of_new_scholarship(scholarship)
             return redirect('admin_scholarship_list')
     else:
@@ -98,12 +99,12 @@ def admin_scholarship_edit(request, pk): # this function is decorated with the @
 
 
 @login_required
-def admin_scholarship_add(request): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function allows the admin user to add a new scholarship using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the new scholarship and checks if it is published. If published, it calls a function to notify subscribers of the new scholarship. Finally, it redirects to the scholarship list. If the request method is GET, it displays an empty form for adding a new scholarship.
+def admin_scholarship_add(request): # this function is decorated with the @login_required decorator, which means that only authenticated users can access this view. If an unauthenticated user tries to access it, they will be redirected to the login page. The function allows the admin user to add a new scholarship using a form. If the request method is POST, it processes the submitted form data; if valid, it saves the new scholarship. Whether subscribers get notified depends on which button the admin clicked -- "Save" just saves, "Save & Notify Subscribers" saves and sends the email, as long as the scholarship is actually published. Finally, it redirects to the scholarship list. If the request method is GET, it displays an empty form for adding a new scholarship.
     if request.method == "POST":
         form = ScholarshipForm(request.POST, request.FILES)
         if form.is_valid():
             scholarship = form.save()
-            if scholarship.is_published:
+            if request.POST.get("action") == "save_and_notify" and scholarship.is_published:
                 notify_subscribers_of_new_scholarship(scholarship)
             return redirect('admin_scholarship_list')
     else:
@@ -579,6 +580,23 @@ def admin_coaching_list(request):
     coaching_requests = CoachingRequest.objects.all().order_by('-created_at')
     context = {"coaching_requests": coaching_requests}
     return render(request, "myapp/admin_coaching_list.html", context)
+
+
+from django.http import HttpResponse, HttpResponseForbidden
+from .reminders import send_deadline_reminders
+
+
+def trigger_deadline_reminders(request):
+    # Not behind @login_required on purpose -- this is meant to be called by an
+    # external, unattended service (a free cron pinger), which can't log in.
+    # Instead, it's protected by a long secret token that must match exactly,
+    # passed as ?key=... in the URL. Anyone without the correct key gets 403.
+    provided_key = request.GET.get("key", "")
+    if not settings.DEADLINE_REMINDER_SECRET or provided_key != settings.DEADLINE_REMINDER_SECRET:
+        return HttpResponseForbidden("Forbidden")
+
+    summary = send_deadline_reminders()
+    return HttpResponse(summary, content_type="text/plain")
 
 
 @login_required

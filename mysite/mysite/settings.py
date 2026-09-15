@@ -163,6 +163,10 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
 
+# Secret key required in the URL to trigger deadline-reminder emails (?key=...).
+# Set this in .env and give the same value to your free cron service (e.g. cron-job.org).
+DEADLINE_REMINDER_SECRET = os.environ.get('DEADLINE_REMINDER_SECRET')
+
 # Base URL used to build absolute links in emails (newsletter, unsubscribe).
 # Set this to your real domain in production, e.g. https://scholarhub.example
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
