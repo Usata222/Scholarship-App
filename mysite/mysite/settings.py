@@ -29,7 +29,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = [
+    h.strip().replace('https://', '').replace('http://', '').rstrip('/')
+    for h in os.environ.get('ALLOWED_HOSTS', '').split(',')
+    if h.strip()
+] if os.environ.get('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -169,4 +173,4 @@ DEADLINE_REMINDER_SECRET = os.environ.get('DEADLINE_REMINDER_SECRET')
 
 # Base URL used to build absolute links in emails (newsletter, unsubscribe).
 # Set this to your real domain in production, e.g. https://scholarhub.example
-SITE_URL = os.environ.get('SITE_URL', 'https://scholarship-app-ok7y.onrender.com/')
+SITE_URL = os.environ.get('SITE_URL', 'https://scholarship-app-ok7y.onrender.com').rstrip('/')
