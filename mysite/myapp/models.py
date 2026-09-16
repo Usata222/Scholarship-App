@@ -70,12 +70,13 @@ class AnalyticsEvent(models.Model):
     search_summary = models.CharField(max_length=255, blank=True)  # e.g. "country=germany, level=masters"
     result_count = models.PositiveIntegerField(null=True, blank=True)  # only set for 'search' events
 
-    # session_key (not the visitor's IP) stands in for "one visitor" -- an opaque,
+    # session_key stands in for "one visitor" -- an opaque,
     # rotating token Django already manages, so we get visitor counts without
     # permanently storing anything that identifies a real person.
     session_key = models.CharField(max_length=40, blank=True)
     utm_source = models.CharField(max_length=100, blank=True)
     referrer = models.CharField(max_length=300, blank=True)
+    country = models.CharField(max_length=100, blank=True, default="", db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

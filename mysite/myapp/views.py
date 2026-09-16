@@ -198,21 +198,31 @@ def admin_statistics(request):
     trend_labels_json = json.dumps(trend_labels)
     trend_values_json = json.dumps(trend_values)
 
-    # ---- 3. Traffic sources ----
-    # Groups by utm_source when present; otherwise falls back to the referrer's
-    # domain so "google.com/search..." becomes just "google.com". Blank/unset
-    # is bucketed as Direct/Unknown -- this is genuinely common (TikTok/Instagram's
-    # in-app browsers often strip the referrer header entirely).
-    source_counts = {}
-    for event in current_events.exclude(event_type="save").only("utm_source", "referrer"):
-        if event.utm_source:
-            source = event.utm_source
-        elif event.referrer:
-            source = event.referrer.split("/")[2] if "//" in event.referrer else event.referrer
-        else:
-            source = "Direct / Unknown"
-        source_counts[source] = source_counts.get(source, 0) + 1
-    traffic_sources = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)[:6]
+    # ---- 3. Visitor countries (Traffic by Country) ----
+    # Aggregates visitors by country and counts distinct visitors (sessions) as well as total events.
+    # Sorted from highest to lowest number of visitors.
+    country_counts_raw = (
+        current_events.values("country")
+        .annotate(
+            visitors=Count("session_key", distinct=True),
+            events=Count("id"),
+        )
+        .order_by("-visitors", "-events")
+    )
+    country_map = {}
+    for row in country_counts_raw:
+        c_name = row["country"].strip() if row["country"] else "Unknown"
+        vis_count = row["visitors"] if row["visitors"] > 0 else row["events"]
+        if c_name not in country_map:
+            country_map[c_name] = {"visitors": 0, "events": 0}
+        country_map[c_name]["visitors"] += vis_count
+        country_map[c_name]["events"] += row["events"]
+
+    country_stats = [
+        {"country": c, "visitors": data["visitors"], "events": data["events"]}
+        for c, data in country_map.items()
+    ]
+    country_stats.sort(key=lambda x: (x["visitors"], x["events"]), reverse=True)
 
     # ---- 5 & 6. Most viewed / most clicked scholarships ----
     most_viewed = (
@@ -315,7 +325,7 @@ def admin_statistics(request):
         "trend_labels_json": trend_labels_json,
         "trend_values_json": trend_values_json,
         "trend_values": trend_values,
-        "traffic_sources": traffic_sources,
+        "country_stats": country_stats,
         "most_viewed_table": most_viewed_table,
         "most_clicked_table": most_clicked_table,
         "popular_degree_levels": popular_degree_levels,

@@ -67,19 +67,18 @@
 <p>No traffic recorded yet in this period.</p>
 {% endif %}
 
-<h2>Traffic Sources</h2>
-{% if traffic_sources %}
+<h2>Traffic by Country</h2>
+{% if country_stats %}
 <div class="table-wrap">
 <table>
-    <tr><th>Source</th><th>Events</th></tr>
-    {% for source, count in traffic_sources %}
-    <tr><td>{{ source }}</td><td>{{ count }}</td></tr>
+    <tr><th>Country</th><th>Visitors</th><th>Events</th></tr>
+    {% for row in country_stats %}
+    <tr><td>{{ row.country }}</td><td>{{ row.visitors }}</td><td>{{ row.events }}</td></tr>
     {% endfor %}
 </table>
 </div>
-<p style="font-size:0.85rem; color:var(--slate-light);">Note: TikTok and Instagram's in-app browsers often strip referrer data, so genuinely social-driven traffic may still show as "Direct / Unknown" unless links are tagged with a <code>?utm_source=</code> parameter.</p>
 {% else %}
-<p>No traffic data yet.</p>
+<p>No visitor country data recorded yet in this period.</p>
 {% endif %}
 
 <h2>Most Viewed Scholarships</h2>

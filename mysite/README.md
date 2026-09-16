@@ -35,7 +35,7 @@ A scholarship discovery platform built with Django — where students find, filt
 - **Submit a Scholarship** — Public form for organizations to submit opportunities, with an admin review/approve/reject queue and email notifications
 - **1-on-1 Coaching Requests** — Public contact form for application-support inquiries
 - **Custom Admin Dashboard** (`/dashboard/`) — Session-based login (rate-limited against brute-force attempts), password reset, full CRUD for Scholarships and Countries, submission/coaching review queues, newsletter composer
-- **Statistics / Analytics Page** — Date-range filtering, visitor trends (Chart.js), traffic sources, most-viewed/most-clicked scholarships with CTR, popular categories and destinations, search analytics including zero-result searches
+- **Statistics / Analytics Page** — Date-range filtering, visitor trends (Chart.js), traffic by visitor country, most-viewed/most-clicked scholarships with CTR, popular categories and destinations, search analytics including zero-result searches
 - **SEO** — `robots.txt`, `sitemap.xml`, custom 404 page, canonical URLs, Open Graph tags, favicon
 - **Privacy & Consent** — Privacy Policy and Terms of Use pages, consent checkboxes on public forms
 - **Responsive Design** — Mobile-friendly UI with a hamburger navigation menu on small screens
@@ -179,7 +179,7 @@ DEADLINE_REMINDER_SECRET=a-long-random-string
 5. **Submissions** — review, approve, or reject organization-submitted scholarships
 6. **Coaching Requests** — view incoming coaching inquiries
 7. **Send Newsletter** — compose and broadcast a one-off email to all subscribers
-8. **Statistics** — view visitor trends, traffic sources, top-performing scholarships, and search analytics with a date-range filter
+8. **Statistics** — view visitor trends, traffic by visitor country, top-performing scholarships, and search analytics with a date-range filter
 
 ---
 
