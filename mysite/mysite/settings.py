@@ -169,4 +169,4 @@ DEADLINE_REMINDER_SECRET = os.environ.get('DEADLINE_REMINDER_SECRET')
 
 # Base URL used to build absolute links in emails (newsletter, unsubscribe).
 # Set this to your real domain in production, e.g. https://scholarhub.example
-SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
+SITE_URL = os.environ.get('SITE_URL', 'https://scholarship-app-ok7y.onrender.com/')
